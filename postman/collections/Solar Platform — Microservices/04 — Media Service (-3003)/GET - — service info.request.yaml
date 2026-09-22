@@ -1,0 +1,11 @@
+$kind: http-request
+name: GET / — service info
+url: "{{media_url}}/"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      pm.test('service is service-media', () => pm.expect(pm.response.json().service).to.eql('service-media'));
+    language: text/javascript
+order: 1000

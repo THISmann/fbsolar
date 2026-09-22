@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+model ChatMessage {
+  id        String   @id @default(uuid())
+  visitorId String
+  sender    String
+  message   String
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+  @@index([visitorId, createdAt])
+}
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  referrer  String?
+  visitorId String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+}

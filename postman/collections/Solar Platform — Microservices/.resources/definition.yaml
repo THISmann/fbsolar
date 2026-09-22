@@ -1,0 +1,27 @@
+$kind: collection
+description: |-
+  Tests smoke / health pour les 5 micro-services NestJS (accès direct + via Traefik).
+
+  Prérequis : `docker compose up -d`
+
+  Importer aussi l'environnement `Solar.local.postman_environment.json`.
+variables:
+  gateway_url: http://localhost:3000
+  auth_url: http://localhost:3001
+  catalog_url: http://localhost:3002
+  media_url: http://localhost:3003
+  interaction_url: http://localhost:3004
+  traefik_url: http://localhost
+scripts:
+  - type: http:beforeRequest
+    code: |-
+      // Correlation ID pour tracer les requêtes
+      const id = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+      pm.request.headers.upsert({ key: 'X-Request-Id', value: id });
+    language: text/javascript
+  - type: http:afterResponse
+    code: |-
+      pm.test('Response time < 2000ms', function () {
+        pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+    language: text/javascript

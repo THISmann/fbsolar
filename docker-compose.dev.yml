@@ -1,0 +1,33 @@
+services:
+  postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+  redis:
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+  minio:
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+  rabbitmq:
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+  api-gateway:
+    ports:
+      - "${API_GATEWAY_PORT:-3000}:3000"
+  service-auth:
+    ports:
+      - "${SERVICE_AUTH_PORT:-3001}:3001"
+  service-catalog:
+    ports:
+      - "${SERVICE_CATALOG_PORT:-3002}:3002"
+  service-media:
+    ports:
+      - "${SERVICE_MEDIA_PORT:-3003}:3003"
+  service-interaction:
+    ports:
+      - "${SERVICE_INTERACTION_PORT:-3004}:3004"
+  web:
+    ports:
+      - "${WEB_PORT:-5173}:80"

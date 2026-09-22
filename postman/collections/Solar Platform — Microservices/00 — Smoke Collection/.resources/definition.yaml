@@ -1,0 +1,3 @@
+$kind: collection
+description: Lancer ce dossier en Runner pour valider tout le stack d'un coup.
+order: 1000

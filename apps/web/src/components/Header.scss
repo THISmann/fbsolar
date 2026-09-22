@@ -1,0 +1,242 @@
+.header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 40;
+  height: var(--nav-h);
+  color: var(--color-white);
+  transition: background 0.35s var(--ease), color 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+
+.header--solid {
+  color: var(--color-white);
+  background: rgba(13, 18, 10, 0.94);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+.header__inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  height: 100%;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  z-index: 60;
+  position: relative;
+  max-width: min(52vw, 15rem);
+}
+
+.brand__logo {
+  width: auto;
+  height: clamp(2.6rem, 6vw, 3.35rem);
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.brand__mark {
+  display: none;
+}
+
+.brand__text {
+  display: none;
+}
+
+.header__nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(0.75rem, 1.8vw, 1.75rem);
+}
+
+.header__nav a {
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.88;
+  transition: opacity 0.2s ease;
+}
+
+.header__nav a:hover,
+.header__nav a.active {
+  opacity: 1;
+}
+
+.header__nav a.active {
+  box-shadow: inset 0 -1px 0 currentColor;
+}
+
+.header__nav-phone {
+  display: none;
+}
+
+.header__nav-lang {
+  display: flex;
+  align-items: center;
+  align-self: center;
+}
+
+.header__end {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 0.65rem;
+}
+
+.header__lang-mobile {
+  display: none;
+}
+
+.header__phone {
+  padding: 0.55rem 0.95rem;
+  border: 1px solid currentColor;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.header__toggle {
+  display: none;
+  position: relative;
+  z-index: 60;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  justify-self: end;
+}
+
+.header__toggle span {
+  display: block;
+  width: 1.25rem;
+  height: 1.5px;
+  margin: 0.28rem auto;
+  background: currentColor;
+  transition: transform 0.3s var(--ease), opacity 0.2s ease;
+}
+
+.header--open .header__toggle span:first-of-type {
+  transform: translateY(3.5px) rotate(45deg);
+}
+
+.header--open .header__toggle span:last-of-type {
+  transform: translateY(-3.5px) rotate(-45deg);
+}
+
+@media (max-width: 1180px) {
+  .header__phone {
+    display: none;
+  }
+
+  .header__inner {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+@media (max-width: 1024px) {
+  .header__inner {
+    grid-template-columns: 1fr auto auto;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .header__toggle {
+    display: block;
+    order: 3;
+  }
+
+  .header__end {
+    order: 2;
+  }
+
+  .header__lang-mobile {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 60;
+  }
+
+  /* One switcher only: top bar on mobile/tablet, not inside the drawer */
+  .header__nav-lang {
+    display: none;
+  }
+
+  .header__nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: 0;
+    padding: calc(var(--nav-h) + 1.25rem) 1.5rem 2.5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: var(--color-mist);
+    color: var(--color-ink);
+    transform: translateY(-105%);
+    transition: transform 0.45s var(--ease);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .header--open .header__nav {
+    transform: none;
+  }
+
+  .header__nav a {
+    display: block;
+    width: 100%;
+    flex: 0 0 auto;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 7vw, 2.2rem);
+    font-weight: 700;
+    opacity: 1;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(20, 32, 27, 0.1);
+    box-shadow: none;
+  }
+
+  .header__nav a.active {
+    box-shadow: none;
+    color: var(--color-orange);
+  }
+
+  .header__nav-phone {
+    display: inline-flex;
+    align-self: flex-start;
+    width: auto;
+    flex: 0 0 auto;
+    margin-top: 1.75rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--color-ink);
+    border-bottom: 1px solid var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand {
+    max-width: 11.5rem;
+  }
+
+  .brand__logo {
+    height: 2.35rem;
+  }
+}

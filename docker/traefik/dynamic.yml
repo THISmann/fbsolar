@@ -1,0 +1,99 @@
+# Dynamic routing — NestJS microservices on solar-net
+# Strip /api/<service> so Nest controllers keep clean paths
+# (/api/auth/login → /login, /api/catalog/products → /products)
+http:
+  middlewares:
+    auth-strip:
+      stripPrefix:
+        prefixes:
+          - /api/auth
+    catalog-strip:
+      stripPrefix:
+        prefixes:
+          - /api/catalog
+    media-strip:
+      stripPrefix:
+        prefixes:
+          - /api/media
+    interaction-strip:
+      stripPrefix:
+        prefixes:
+          - /api/interaction
+    ws-strip:
+      stripPrefix:
+        prefixes:
+          - /ws
+
+  routers:
+    auth:
+      rule: PathPrefix(`/api/auth`)
+      entryPoints: [web]
+      middlewares: [auth-strip]
+      service: auth
+      priority: 100
+
+    catalog:
+      rule: PathPrefix(`/api/catalog`)
+      entryPoints: [web]
+      middlewares: [catalog-strip]
+      service: catalog
+      priority: 100
+
+    media:
+      rule: PathPrefix(`/api/media`)
+      entryPoints: [web]
+      middlewares: [media-strip]
+      service: media
+      priority: 100
+
+    interaction:
+      rule: PathPrefix(`/api/interaction`)
+      entryPoints: [web]
+      middlewares: [interaction-strip]
+      service: interaction
+      priority: 100
+
+    ws:
+      rule: PathPrefix(`/ws`)
+      entryPoints: [web]
+      middlewares: [ws-strip]
+      service: interaction
+      priority: 100
+
+    gateway:
+      rule: PathPrefix(`/`)
+      entryPoints: [web]
+      service: gateway
+      priority: 1
+
+    web:
+      rule: (Host(`localhost`) || Host(`www.localhost`)) && !PathPrefix(`/api`) && !PathPrefix(`/ws`)
+      entryPoints: [web]
+      service: web
+      priority: 50
+
+  services:
+    auth:
+      loadBalancer:
+        servers:
+          - url: http://service-auth:3001
+    catalog:
+      loadBalancer:
+        servers:
+          - url: http://service-catalog:3002
+    media:
+      loadBalancer:
+        servers:
+          - url: http://service-media:3003
+    interaction:
+      loadBalancer:
+        servers:
+          - url: http://service-interaction:3004
+    gateway:
+      loadBalancer:
+        servers:
+          - url: http://api-gateway:3000
+    web:
+      loadBalancer:
+        servers:
+          - url: http://web:80

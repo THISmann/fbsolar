@@ -1,0 +1,54 @@
+# syntax=docker/dockerfile:1.7
+
+ARG NODE_VERSION=20
+
+FROM node:${NODE_VERSION}-alpine AS prune
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.base.json ./
+COPY packages ./packages
+COPY apps ./apps
+
+ARG SERVICE_NAME
+RUN pnpm dlx turbo@2.11.2 prune "@solar/${SERVICE_NAME}" --docker
+
+FROM node:${NODE_VERSION}-alpine AS build
+RUN apk add --no-cache openssl \
+  && corepack enable && corepack prepare pnpm@9.15.0 --activate
+WORKDIR /app
+
+COPY --from=prune /app/out/json/ ./
+RUN pnpm install --frozen-lockfile
+
+COPY --from=prune /app/out/full/ ./
+COPY turbo.json tsconfig.base.json ./
+
+ARG SERVICE_NAME
+RUN if [ -f "apps/${SERVICE_NAME}/prisma/schema.prisma" ]; then \
+      cd "apps/${SERVICE_NAME}" && pnpm exec prisma generate; \
+    fi
+RUN pnpm turbo run build --filter="@solar/${SERVICE_NAME}..."
+RUN if [ -f "apps/${SERVICE_NAME}/prisma/schema.prisma" ]; then \
+      cd "apps/${SERVICE_NAME}" && pnpm exec prisma generate; \
+    fi
+
+FROM node:${NODE_VERSION}-alpine AS runner
+RUN apk add --no-cache openssl \
+  && corepack enable && corepack prepare pnpm@9.15.0 --activate \
+  && addgroup -S solar && adduser -S solar -G solar
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=build --chown=solar:solar /app ./
+COPY --chown=solar:solar docker/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+ARG SERVICE_NAME
+ENV SERVICE_NAME=${SERVICE_NAME}
+
+USER solar
+WORKDIR /app/apps/${SERVICE_NAME}
+
+CMD ["/app/entrypoint.sh"]

@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  /// Legacy full-admin — treated as SUPER_ADMIN in authorization
+  ADMIN
+  SUPER_ADMIN
+  /// Pages (accueil, à propos, expertises, WhatsApp) + projets réalisés
+  CONTENT_EDITOR
+  /// Produits / prix + contacts reçus + tableau de bord visites
+  CATALOG_MANAGER
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  passwordHash String
+  role         Role           @default(USER)
+  jobTitle     String?
+  active       Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  sessions     AdminSession[]
+  auditLogs    AuditLog[]     @relation("AuditActor")
+
+  @@index([role, active])
+}
+
+model AdminSession {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip         String?
+  userAgent  String?   @db.VarChar(512)
+  loginAt    DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  logoutAt   DateTime?
+
+  @@index([userId, loginAt])
+  @@index([loginAt])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorEmail String
+  action     String
+  resource   String
+  resourceId String?
+  meta       Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+}

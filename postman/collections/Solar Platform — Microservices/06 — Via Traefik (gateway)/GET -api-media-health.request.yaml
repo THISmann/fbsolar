@@ -1,0 +1,11 @@
+$kind: http-request
+name: GET /api/media/health
+url: "{{traefik_url}}/api/media/health"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      pm.test('Proxied to media', () => pm.expect(pm.response.json().service).to.eql('service-media'));
+    language: text/javascript
+order: 3000

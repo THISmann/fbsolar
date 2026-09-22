@@ -1,0 +1,3 @@
+$kind: collection
+description: Vérifie le reverse-proxy Traefik (StripPrefix → services).
+order: 7000

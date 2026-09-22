@@ -1,0 +1,11 @@
+$kind: http-request
+name: GET /health/ready
+url: "{{media_url}}/health/ready"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      pm.test('Readiness OK', () => pm.expect(pm.response.json().status).to.eql('ok'));
+    language: text/javascript
+order: 4000

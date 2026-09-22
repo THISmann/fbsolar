@@ -1,0 +1,28 @@
+# Git / IDE
+.git
+.github
+.vscode
+.idea
+**/.DS_Store
+Thumbs.db
+
+# Dependencies & build
+**/node_modules
+**/.turbo
+**/dist
+**/coverage
+**/*.tsbuildinfo
+apps/**/src/generated
+
+# Env & secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Docs / misc
+*.md
+!README.md
+docker-data
+agent-transcripts
+postman

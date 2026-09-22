@@ -1,0 +1,14 @@
+$kind: http-request
+description: Point d'entrée smoke — le Runner enchaîne les autres requêtes du dossier.
+url: "{{gateway_url}}/health"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status 200', () => pm.response.to.have.status(200));
+      const body = pm.response.json();
+      pm.test('status === ok', () => pm.expect(body.status).to.eql('ok'));
+      pm.test('service name present', () => pm.expect(body.service).to.be.a('string'));
+      pm.test('uptime is number', () => pm.expect(body.uptime).to.be.a('number'));
+    language: text/javascript
+order: 1000
