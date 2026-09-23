@@ -67,7 +67,8 @@ http:
       priority: 1
 
     web:
-      rule: (Host(`localhost`) || Host(`www.localhost`)) && !PathPrefix(`/api`) && !PathPrefix(`/ws`)
+      # Any host (localhost, VPS IP, domain) — SPA on everything except API/WS
+      rule: !PathPrefix(`/api`) && !PathPrefix(`/ws`)
       entryPoints: [web]
       service: web
       priority: 50

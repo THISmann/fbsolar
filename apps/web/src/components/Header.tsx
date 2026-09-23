@@ -66,8 +66,11 @@ export function Header() {
           onClick={() => setOpen((v) => !v)}
         >
           <span className="sr-only">{open ? t('nav.closeMenu') : t('nav.openMenu')}</span>
-          <span />
-          <span />
+          <span className="header__toggle-bars" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
         </button>
 
         <nav id="site-nav" className="header__nav" aria-label={t('nav.main')}>

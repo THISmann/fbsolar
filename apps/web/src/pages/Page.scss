@@ -182,6 +182,53 @@
   .projects-grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .page-hero {
+    padding: clamp(2rem, 5vw, 3.5rem) 0 clamp(1.5rem, 3.5vw, 2.25rem);
+  }
+
+  .page-hero h1 {
+    font-size: clamp(2.1rem, 6.5vw, 3.4rem);
+    max-width: none;
+  }
+
+  .page-hero p:last-child {
+    max-width: none;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .page-section {
+    padding: clamp(2rem, 5vw, 3.25rem) 0 clamp(2.75rem, 7vw, 4.5rem);
+  }
+
+  .split p,
+  .expertise-list p,
+  .contact-aside,
+  .project-detail__body {
+    font-size: 1.03rem;
+    line-height: 1.65;
+  }
+
+  .contact-form {
+    padding: 1.25rem;
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    min-height: 3rem;
+    padding: 0.85rem 0.95rem;
+    font-size: 1rem;
+  }
+
+  .contact-form textarea {
+    min-height: 8.5rem;
+  }
+
+  .project-detail__hero-copy h1 {
+    font-size: clamp(1.85rem, 6vw, 2.8rem);
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.45);
+  }
 }
 
 @media (max-width: 768px) {
@@ -196,13 +243,42 @@
     gap: 1.75rem;
   }
 
+  .expertise-list article {
+    gap: 0.75rem;
+    padding: 1.35rem 0;
+  }
+
+  .expertise-list h2 {
+    font-size: clamp(1.35rem, 5vw, 1.7rem);
+  }
+
   .project-detail__hero {
-    min-height: 48vh;
+    min-height: min(52vh, 26rem);
+  }
+
+  .project-detail__hero::after {
+    background: linear-gradient(180deg, rgba(15, 28, 23, 0.15), rgba(15, 28, 23, 0.88));
+  }
+
+  .project-detail__hero-copy {
+    padding-bottom: calc(1.75rem + 0.5rem);
+  }
+
+  .page-section {
+    padding-bottom: calc(clamp(2.75rem, 7vw, 4.5rem) + 0.5rem);
   }
 }
 
 @media (max-width: 560px) {
   .projects-grid {
     grid-template-columns: 1fr;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(1.95rem, 9vw, 2.55rem);
+  }
+
+  .contact-form .btn {
+    width: 100%;
   }
 }

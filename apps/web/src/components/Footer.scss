@@ -77,15 +77,33 @@
   .footer__grid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .footer__cta h2 {
+    max-width: none;
+    font-size: clamp(1.85rem, 5.5vw, 2.85rem);
+  }
+
+  .footer__brand img {
+    height: 3.15rem;
+  }
 }
 
 @media (max-width: 640px) {
   .footer__cta {
-    padding: var(--space-xl) 0;
+    padding: calc(var(--space-xl) + 0.25rem) 0 calc(var(--space-xl) + var(--fab-clearance) * 0.35);
+  }
+
+  .footer__main {
+    padding-bottom: calc(var(--space-lg) + var(--fab-clearance) * 0.45);
   }
 
   .footer__grid {
     grid-template-columns: 1fr;
     gap: 1.75rem;
+  }
+
+  .footer__main nav a {
+    padding: 0.2rem 0;
+    font-size: 1.02rem;
   }
 }

@@ -1,4 +1,5 @@
 import type { Permission, Role, StaffRole } from './permissions';
+import { isPublicCacheablePath, matchPublicApiCache, putPublicApiCache } from '../offline/publicApiCache';
 export type { Permission, Role, StaffRole } from './permissions';
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') || 'http://localhost';
@@ -246,7 +247,23 @@ async function request<T>(
     if (token) headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE}${path}`, { ...init, headers });
+  const method = (init?.method ?? 'GET').toUpperCase();
+  const cacheable = init?.auth === false && method === 'GET' && isPublicCacheablePath(path);
+  const url = `${API_BASE}${path}`;
+
+  let response: Response;
+  try {
+    response = await fetch(url, { ...init, headers });
+  } catch (error) {
+    if (cacheable) {
+      const cached = await matchPublicApiCache(url);
+      if (cached) {
+        if (cached.status === 204) return undefined as T;
+        return cached.json() as Promise<T>;
+      }
+    }
+    throw error;
+  }
 
   if (response.status === 401 && init?.auth !== false && init?.retry !== false) {
     const next = await refreshAccessToken();
@@ -255,7 +272,21 @@ async function request<T>(
     }
   }
 
-  if (!response.ok) throw new Error(await parseError(response));
+  if (!response.ok) {
+    if (cacheable) {
+      const cached = await matchPublicApiCache(url);
+      if (cached?.ok) {
+        if (cached.status === 204) return undefined as T;
+        return cached.json() as Promise<T>;
+      }
+    }
+    throw new Error(await parseError(response));
+  }
+
+  if (cacheable) {
+    void putPublicApiCache(url, response);
+  }
+
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }

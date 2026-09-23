@@ -34,6 +34,9 @@
     "fr": "Français",
     "en": "English"
   },
+  "offline": {
+    "banner": "You're offline — showing saved content. Online actions (contact, admin) will work again when you're back online."
+  },
   "nav": {
     "home": "Home",
     "projects": "Projects",

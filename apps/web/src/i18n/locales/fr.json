@@ -34,6 +34,9 @@
     "fr": "Français",
     "en": "English"
   },
+  "offline": {
+    "banner": "Hors ligne — affichage du contenu enregistré. Les actions en ligne (contact, admin) seront disponibles au retour du réseau."
+  },
   "nav": {
     "home": "Accueil",
     "projects": "Projets",

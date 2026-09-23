@@ -27,7 +27,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 35%, rgba(15, 28, 23, 0.78) 100%);
+  background: linear-gradient(180deg, transparent 28%, rgba(15, 28, 23, 0.82) 100%);
   z-index: 1;
 }
 
@@ -50,12 +50,14 @@
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  opacity: 0.85;
+  opacity: 0.9;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }
 
 .project-tile__meta h3 {
   font-size: clamp(1.25rem, 2vw, 1.65rem);
   max-width: 16ch;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
 }
 
 /* Keep modifier classes for markup compatibility — same size for all */
@@ -67,8 +69,27 @@
   min-height: 0;
 }
 
+@media (max-width: 1024px) {
+  .project-tile__meta {
+    padding: 1.15rem 1.15rem 1.25rem;
+  }
+
+  .project-tile__meta h3 {
+    font-size: clamp(1.3rem, 3.2vw, 1.55rem);
+    max-width: none;
+  }
+}
+
 @media (max-width: 560px) {
   .project-tile {
     aspect-ratio: 5 / 4;
+  }
+
+  .project-tile::after {
+    background: linear-gradient(180deg, transparent 20%, rgba(15, 28, 23, 0.88) 100%);
+  }
+
+  .project-tile__meta h3 {
+    font-size: 1.35rem;
   }
 }

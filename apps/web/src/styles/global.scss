@@ -30,7 +30,8 @@
   --space-lg: 3rem;
   --space-xl: 5rem;
   --space-2xl: 8rem;
-  --page-pad: clamp(1rem, 4vw, 1.5rem);
+  --page-pad: clamp(1.15rem, 4.5vw, 1.5rem);
+  --fab-clearance: 4.75rem;
 
   --nav-h: 4.75rem;
   --content: 72rem;
@@ -280,6 +281,35 @@ ul {
   color: #fff;
 }
 
+@media (max-width: 1024px) {
+  :root {
+    --nav-h: 4.35rem;
+    --page-pad: clamp(1.2rem, 4.8vw, 1.6rem);
+  }
+
+  body {
+    font-size: 1.05rem;
+    line-height: 1.68;
+  }
+
+  .btn {
+    min-height: 3rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --nav-h: 4.15rem;
+    --page-pad: 1.2rem;
+    --fab-clearance: 5.25rem;
+  }
+
+  body {
+    font-size: 1.0625rem;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   html {
