@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { ProjectTile } from '../components/ProjectTile';
 import { Reveal } from '../components/Reveal';
 import { WhatsAppFloat } from '../components/WhatsAppFloat';
-import { api, fallbackImages, type Product } from '../lib/api';
+import { api, fallbackImages, withCacheBust, type Product } from '../lib/api';
+import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Home.scss';
 
 type HomeData = {
@@ -82,6 +83,7 @@ function mergeHomeCms(
 
 export function HomePage() {
   const { t, i18n } = useTranslation();
+  const { revision } = useRealtime();
   const [projects, setProjects] = useState<Product[]>([]);
   const defaults = useMemo(() => buildDefaults(t), [t, i18n.language]);
   const [cms, setCms] = useState<HomeData>(() => defaults);
@@ -89,37 +91,44 @@ export function HomePage() {
     setCms(defaults);
   }, [defaults]);
 
+  const loadHome = () => {
+    const preferText = i18n.language.startsWith('en');
+    return Promise.all([
+      api
+        .page('home')
+        .then((page) => {
+          setCms(mergeHomeCms(defaults, page.data as HomeData, preferText));
+        })
+        .catch(() => undefined),
+      api
+        .products({ limit: 6, kind: 'PROJECT' })
+        .then((data) => setProjects(data.items))
+        .catch(() => setProjects([])),
+    ]);
+  };
+
   useEffect(() => {
     let alive = true;
-    const preferText = i18n.language.startsWith('en');
-    api
-      .page('home')
-      .then((page) => {
-        if (alive) {
-          setCms(mergeHomeCms(defaults, page.data as HomeData, preferText));
-        }
-      })
-      .catch(() => undefined);
-    api
-      .products({ limit: 6, kind: 'PROJECT' })
-      .then((data) => {
-        if (alive) setProjects(data.items);
-      })
-      .catch(() => {
-        if (alive) setProjects([]);
-      });
+    void loadHome().finally(() => {
+      if (!alive) return;
+    });
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload via realtime + language
   }, [defaults, i18n.language]);
 
+  useRealtimeRefresh(['page', 'project', 'product'], () => void loadHome(), { keys: ['home'] });
+
   const expertises = cms.expertises?.length ? cms.expertises : defaults.expertises!;
+  const heroSrc = withCacheBust(cms.heroImage || defaults.heroImage || '', revision);
+  const storySrc = withCacheBust(cms.storyImage || defaults.storyImage || '', revision);
 
   return (
     <div className="home">
       <section className="hero">
         <div className="hero__media" aria-hidden="true">
-          <img src={cms.heroImage || defaults.heroImage} alt="" fetchPriority="high" />
+          <img src={heroSrc} alt="" fetchPriority="high" />
         </div>
         <div className="hero__veil" aria-hidden="true" />
         <div className="hero__content container--wide">
@@ -216,7 +225,7 @@ export function HomePage() {
 
       <section className="story-block">
         <div className="story-block__media" aria-hidden="true">
-          <img src={cms.storyImage || defaults.storyImage} alt="" loading="lazy" />
+          <img src={storySrc} alt="" loading="lazy" />
         </div>
         <div className="container story-block__copy">
           <Reveal>

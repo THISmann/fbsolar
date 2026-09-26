@@ -24,6 +24,42 @@ type HttpRequest = {
 };
 type ChatInput = { visitorId: string; message: string; sender?: string };
 
+export type ContentChangedEvent = {
+  resource: 'product' | 'project' | 'page' | 'category' | 'article' | 'contact' | 'media';
+  action: 'created' | 'updated' | 'deleted';
+  id?: string;
+  slug?: string;
+  key?: string;
+  kind?: 'PRODUCT' | 'PROJECT';
+  at: string;
+};
+
+function normalizeContentEvent(routingKey: string, raw: Record<string, unknown>): ContentChangedEvent | null {
+  if (routingKey === 'contact.created') {
+    return {
+      resource: 'contact',
+      action: 'created',
+      id: typeof raw.id === 'string' ? raw.id : undefined,
+      at: new Date().toISOString(),
+    };
+  }
+  if (routingKey === 'content.changed' || raw.resource) {
+    const resource = raw.resource as ContentChangedEvent['resource'] | undefined;
+    const action = raw.action as ContentChangedEvent['action'] | undefined;
+    if (!resource || !action) return null;
+    return {
+      resource,
+      action,
+      id: typeof raw.id === 'string' ? raw.id : undefined,
+      slug: typeof raw.slug === 'string' ? raw.slug : undefined,
+      key: typeof raw.key === 'string' ? raw.key : undefined,
+      kind: raw.kind === 'PRODUCT' || raw.kind === 'PROJECT' ? raw.kind : undefined,
+      at: typeof raw.at === 'string' ? raw.at : new Date().toISOString(),
+    };
+  }
+  return null;
+}
+
 const escapeHtml = (value: string): string =>
   value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char);
 
@@ -65,13 +101,35 @@ export class InteractionService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(InteractionService.name);
   private connection?: ChannelModel;
   private channel?: Channel;
+  private contentBroadcast?: (event: ContentChangedEvent) => void;
+
   constructor(private readonly db: PrismaService) {}
+
+  /** Wired by ChatGateway once Socket.IO server is ready. */
+  setContentBroadcaster(fn: (event: ContentChangedEvent) => void): void {
+    this.contentBroadcast = fn;
+  }
+
   async onModuleInit(): Promise<void> {
     if (!process.env.RABBITMQ_URL) return;
     try {
       this.connection = await amqp.connect(process.env.RABBITMQ_URL);
       this.channel = await this.connection.createChannel();
       await this.channel.assertExchange('solar.events', 'topic', { durable: true });
+      const q = await this.channel.assertQueue('solar.content.realtime', { durable: true });
+      await this.channel.bindQueue(q.queue, 'solar.events', 'content.changed');
+      await this.channel.consume(q.queue, (msg) => {
+        if (!msg) return;
+        try {
+          const raw = JSON.parse(msg.content.toString()) as Record<string, unknown>;
+          const event = normalizeContentEvent(msg.fields.routingKey, raw);
+          if (event) this.contentBroadcast?.(event);
+        } catch (error) {
+          this.logger.warn(`Bad content event payload: ${error instanceof Error ? error.message : 'unknown'}`);
+        } finally {
+          this.channel?.ack(msg);
+        }
+      });
     } catch (error) {
       this.logger.warn(`RabbitMQ unavailable: ${error instanceof Error ? error.message : 'unknown error'}`);
     }
@@ -88,6 +146,12 @@ export class InteractionService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       this.logger.warn(`Could not publish contact.created: ${error instanceof Error ? error.message : 'unknown error'}`);
     }
+    this.contentBroadcast?.({
+      resource: 'contact',
+      action: 'created',
+      id: created.id,
+      at: new Date().toISOString(),
+    });
     return created;
   }
   async listContacts(page = 1, limit = 20) {
@@ -107,11 +171,24 @@ export class InteractionService implements OnModuleInit, OnModuleDestroy {
   contactOne(id: string) {
     return this.db.contactMessage.findUniqueOrThrow({ where: { id } });
   }
-  markContactRead(id: string) {
-    return this.db.contactMessage.update({ where: { id }, data: { readAt: new Date() } });
+  async markContactRead(id: string) {
+    const updated = await this.db.contactMessage.update({ where: { id }, data: { readAt: new Date() } });
+    this.contentBroadcast?.({
+      resource: 'contact',
+      action: 'updated',
+      id: updated.id,
+      at: new Date().toISOString(),
+    });
+    return updated;
   }
   async deleteContact(id: string) {
     await this.db.contactMessage.delete({ where: { id } });
+    this.contentBroadcast?.({
+      resource: 'contact',
+      action: 'deleted',
+      id,
+      at: new Date().toISOString(),
+    });
     return { success: true };
   }
   trackVisit(dto: VisitDto) {
@@ -347,9 +424,16 @@ export class InteractionController {
 }
 
 @WebSocketGateway({ cors: { origin: corsOrigins(), credentials: true } })
-export class ChatGateway implements OnGatewayConnection {
+export class ChatGateway implements OnGatewayConnection, OnModuleInit {
   @WebSocketServer() server!: Server;
   constructor(private readonly service: InteractionService, private readonly jwt: JwtService) {}
+
+  onModuleInit(): void {
+    this.service.setContentBroadcaster((event) => {
+      this.server.to('content:public').emit('content:changed', event);
+    });
+  }
+
   async handleConnection(client: Socket): Promise<void> {
     const token = typeof client.handshake.auth.token === 'string' ? client.handshake.auth.token : undefined;
     if (token) {
@@ -362,6 +446,7 @@ export class ChatGateway implements OnGatewayConnection {
         if (payload.type !== 'access' || !isStaffRole(payload.role)) throw new Error('Invalid admin token');
         client.data.role = payload.role;
         await client.join('admin:global');
+        await client.join('content:public');
         return;
       } catch {
         client.disconnect(true);
@@ -377,6 +462,7 @@ export class ChatGateway implements OnGatewayConnection {
     }
     client.data.visitorId = visitorId;
     await client.join(`visitor:${visitorId}`);
+    await client.join('content:public');
   }
   private authorizeVisitor(client: Socket, visitorId: string): void {
     if (!isUUID(visitorId)) throw new BadRequestException('Valid visitorId is required');

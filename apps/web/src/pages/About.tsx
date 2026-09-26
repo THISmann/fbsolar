@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Reveal } from '../components/Reveal';
-import { api, fallbackImages } from '../lib/api';
+import { api, fallbackImages, withCacheBust } from '../lib/api';
+import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
 type AboutData = {
@@ -14,6 +15,7 @@ type AboutData = {
 
 export function AboutPage() {
   const { t } = useTranslation();
+  const { revision } = useRealtime();
   const defaults = useMemo<AboutData>(
     () => ({
       eyebrow: t('about.eyebrow'),
@@ -29,20 +31,22 @@ export function AboutPage() {
     setCms(defaults);
   }, [defaults]);
 
-  useEffect(() => {
-    let alive = true;
+  const load = () =>
     api
       .page('about')
       .then((page) => {
-        if (alive) setCms({ ...defaults, ...(page.data as AboutData) });
+        setCms({ ...defaults, ...(page.data as AboutData) });
       })
       .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
+
+  useEffect(() => {
+    void load();
   }, [defaults]);
 
+  useRealtimeRefresh(['page'], () => void load(), { keys: ['about'] });
+
   const paragraphs = cms.paragraphs?.length ? cms.paragraphs : defaults.paragraphs!;
+  const imageSrc = withCacheBust(cms.image || defaults.image || '', revision);
 
   return (
     <div className="page">
@@ -56,7 +60,7 @@ export function AboutPage() {
       <section className="page-section">
         <div className="container split">
           <Reveal>
-            <img className="split__media" src={cms.image || defaults.image} alt="" />
+            <img className="split__media" src={imageSrc} alt="" />
           </Reveal>
           <Reveal delay={100}>
             {paragraphs.map((p) => (

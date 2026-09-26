@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Reveal } from '../components/Reveal';
 import { api } from '../lib/api';
+import { useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
 type ExpertiseData = {
@@ -29,18 +30,19 @@ export function ExpertisesPage() {
     setCms(defaults);
   }, [defaults]);
 
-  useEffect(() => {
-    let alive = true;
+  const load = () =>
     api
       .page('expertises')
       .then((page) => {
-        if (alive) setCms({ ...defaults, ...(page.data as ExpertiseData) });
+        setCms({ ...defaults, ...(page.data as ExpertiseData) });
       })
       .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
+
+  useEffect(() => {
+    void load();
   }, [defaults]);
+
+  useRealtimeRefresh(['page'], () => void load(), { keys: ['expertises'] });
 
   const items = cms.items?.length ? cms.items : defaults.items!;
 

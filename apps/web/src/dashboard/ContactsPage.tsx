@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, type ContactMessage, type ContactsResponse } from '../lib/api';
+import { useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import { IconButton } from './AdminIcons';
 
 export function ContactsPage() {
@@ -23,6 +24,8 @@ export function ContactsPage() {
   useEffect(() => {
     void load();
   }, []);
+
+  useRealtimeRefresh(['contact'], () => void load());
 
   async function openMessage(id: string) {
     try {

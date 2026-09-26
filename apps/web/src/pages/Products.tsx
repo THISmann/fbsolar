@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Reveal } from '../components/Reveal';
 import { api, productImage, type Category, type Product } from '../lib/api';
 import { formatFcfa } from '../lib/money';
+import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 import './Products.scss';
 
@@ -17,6 +18,7 @@ const CATALOG_ORDER = [
 
 export function ProductsPage() {
   const { t, i18n } = useTranslation();
+  const { revision } = useRealtime();
   const locale = i18n.language.startsWith('en') ? 'en-GB' : 'fr-FR';
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -31,29 +33,20 @@ export function ProductsPage() {
     return () => window.clearTimeout(timer);
   }, [search]);
 
-  useEffect(() => {
-    let alive = true;
+  const loadCategories = () =>
     api
       .categories()
       .then((data) => {
-        if (!alive) return;
         const ordered = [...data]
           .filter((c) => CATALOG_ORDER.includes(c.slug))
           .sort((a, b) => CATALOG_ORDER.indexOf(a.slug) - CATALOG_ORDER.indexOf(b.slug));
         setCategories(ordered);
       })
-      .catch(() => {
-        if (alive) setCategories([]);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
+      .catch(() => setCategories([]));
 
-  useEffect(() => {
-    let alive = true;
+  const loadProducts = () => {
     setLoading(true);
-    api
+    return api
       .products({
         limit: 100,
         kind: 'PRODUCT',
@@ -61,22 +54,28 @@ export function ProductsPage() {
         search: searchQuery || undefined,
       })
       .then((data) => {
-        if (!alive) return;
         setProducts(data.items);
         setError(null);
       })
       .catch((err: Error) => {
-        if (!alive) return;
         setError(err.message || t('products.loadError'));
         setProducts([]);
       })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-    return () => {
-      alive = false;
-    };
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    void loadCategories();
+  }, []);
+
+  useEffect(() => {
+    void loadProducts();
   }, [active, searchQuery, t]);
+
+  useRealtimeRefresh(['product', 'category'], () => {
+    void loadCategories();
+    void loadProducts();
+  });
 
   const filters = useMemo(
     () => [{ slug: 'all', name: t('products.filterAll') }, ...categories],
@@ -145,7 +144,7 @@ export function ProductsPage() {
                 <Reveal key={product.id} delay={(index % 4) * 50}>
                   <article className="product-card">
                     <Link to={`/produits/${product.slug}`} className="product-card__media">
-                      <img src={productImage(product, index)} alt="" loading="lazy" />
+                      <img src={productImage(product, index, revision)} alt="" loading="lazy" />
                     </Link>
                     <div className="product-card__body">
                       <span className="product-card__cat">

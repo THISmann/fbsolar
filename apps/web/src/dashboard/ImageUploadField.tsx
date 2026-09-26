@@ -6,10 +6,12 @@ type Props = {
   label: string;
   value: string;
   onChange: (url: string) => void;
+  /** Called after a successful MinIO upload (in addition to onChange). */
+  onUploaded?: (url: string) => void;
   hint?: string;
 };
 
-export function ImageUploadField({ label, value, onChange, hint }: Props) {
+export function ImageUploadField({ label, value, onChange, onUploaded, hint }: Props) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -41,6 +43,7 @@ export function ImageUploadField({ label, value, onChange, hint }: Props) {
       // Always build the public URL from the Vite API base (Traefik), not MinIO.
       const url = mediaFileUrl(uploaded.id);
       onChange(url);
+      onUploaded?.(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('admin.media.uploadError'));
     } finally {

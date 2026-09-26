@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ProjectTile } from '../components/ProjectTile';
 import { Reveal } from '../components/Reveal';
 import { api, type Product } from '../lib/api';
+import { useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
 export function ProjectsPage() {
@@ -11,27 +12,29 @@ export function ProjectsPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let alive = true;
+  const load = () => {
     setLoading(true);
-    api
+    return api
       .products({ limit: 24, kind: 'PROJECT' })
       .then((data) => {
-        if (!alive) return;
         setProducts(data.items);
         setError(null);
       })
       .catch((err: Error) => {
-        if (!alive) return;
         setError(err.message || t('projects.loadError'));
       })
       .finally(() => {
-        if (alive) setLoading(false);
+        setLoading(false);
       });
-    return () => {
-      alive = false;
-    };
-  }, [t]);
+  };
+
+  useEffect(() => {
+    void load();
+    // Initial load only — realtime refresh handles later updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useRealtimeRefresh(['project', 'product'], () => void load());
 
   return (
     <div className="page">

@@ -3,29 +3,33 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { Reveal } from '../components/Reveal';
 import { api, productImage, type Product } from '../lib/api';
+import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
 export function ProjectDetailPage() {
   const { t, i18n } = useTranslation();
   const { slug = '' } = useParams();
+  const { revision } = useRealtime();
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
   const locale = i18n.language.startsWith('en') ? 'en-GB' : 'fr-FR';
 
-  useEffect(() => {
-    let alive = true;
+  const load = () =>
     api
       .product(slug)
       .then((data) => {
-        if (alive) setProduct(data);
+        setProduct(data);
+        setError(null);
       })
       .catch((err: Error) => {
-        if (alive) setError(err.message || t('projects.notFound'));
+        setError(err.message || t('projects.notFound'));
       });
-    return () => {
-      alive = false;
-    };
+
+  useEffect(() => {
+    void load();
   }, [slug, t]);
+
+  useRealtimeRefresh(['project', 'product'], () => void load(), { slugs: slug ? [slug] : undefined });
 
   if (error) {
     return (
@@ -55,7 +59,7 @@ export function ProjectDetailPage() {
   return (
     <div className="page project-detail">
       <div className="project-detail__hero">
-        <img src={productImage(product)} alt="" />
+        <img src={productImage(product, 0, revision)} alt="" />
         <div className="project-detail__hero-copy container">
           <p className="eyebrow">{product.category?.name ?? t('projects.fallbackCategory')}</p>
           <h1>{product.name}</h1>

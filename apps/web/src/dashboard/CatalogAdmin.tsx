@@ -11,6 +11,7 @@ import {
   type ProductKind,
   type SocialPublication,
 } from '../lib/api';
+import { useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import { IconButton, IconLink } from './AdminIcons';
 import { ImageUploadField } from './ImageUploadField';
 
@@ -56,6 +57,11 @@ export function CatalogListPage({ kind, basePath }: Props) {
   useEffect(() => {
     void load('');
   }, [kind]);
+
+  useRealtimeRefresh(
+    kind === 'PROJECT' ? ['project', 'product'] : ['product'],
+    () => void load(),
+  );
 
   async function onDelete(id: string, name: string) {
     if (!window.confirm(t('admin.catalog.deleteConfirm', { name }))) return;
@@ -235,13 +241,17 @@ export function CatalogEditPage({ kind, basePath }: Props) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  function addImage() {
-    const url = sanitizeText(imageDraft, 1000);
+  function addImage(urlRaw?: string) {
+    const url = sanitizeText(urlRaw ?? imageDraft, 1000);
     if (!url || !isSafeHttpUrl(url)) {
       setError(t('admin.catalog.invalidImage'));
       return;
     }
-    update('images', [...form.images, url]);
+    // New image becomes primary (vitrine uses images[0])
+    setForm((prev) => ({
+      ...prev,
+      images: [url, ...prev.images.filter((src) => src !== url)],
+    }));
     setImageDraft('');
     setError(null);
   }
@@ -250,13 +260,19 @@ export function CatalogEditPage({ kind, basePath }: Props) {
     event.preventDefault();
     setSaving(true);
     setError(null);
+    const draft = sanitizeText(imageDraft, 1000);
+    const draftOk = draft && isSafeHttpUrl(draft) ? draft : null;
+    const images = [
+      ...(draftOk ? [draftOk] : []),
+      ...form.images.filter((src) => src !== draftOk && isSafeHttpUrl(src)),
+    ];
     const payload: ProductInput = {
       slug: sanitizeText(form.slug, 120).toLowerCase().replace(/\s+/g, '-'),
       name: sanitizeText(form.name, 200),
       description: sanitizeText(form.description, 5000),
       price: Math.max(0, Number(form.price) || 0),
       categoryId: form.categoryId,
-      images: form.images.filter(isSafeHttpUrl),
+      images,
       published: form.published,
       kind,
     };
@@ -359,15 +375,19 @@ export function CatalogEditPage({ kind, basePath }: Props) {
             label={t('admin.catalog.images')}
             value={imageDraft}
             onChange={setImageDraft}
+            onUploaded={(url) => addImage(url)}
             hint={t('admin.media.hint')}
           />
-          <button type="button" className="btn" style={{ marginTop: '0.5rem' }} onClick={addImage}>
+          <button type="button" className="btn" style={{ marginTop: '0.5rem' }} onClick={() => addImage()}>
             {t('admin.catalog.addImage')}
           </button>
           <ul>
-            {form.images.map((src) => (
+            {form.images.map((src, index) => (
               <li key={src} className="actions" style={{ marginTop: '0.4rem' }}>
-                <span style={{ wordBreak: 'break-all' }}>{src}</span>
+                <span style={{ wordBreak: 'break-all' }}>
+                  {index === 0 ? '★ ' : ''}
+                  {src}
+                </span>
                 <button
                   type="button"
                   className="btn"

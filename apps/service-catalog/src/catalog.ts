@@ -11,6 +11,7 @@ import Redis from 'ioredis';
 import { JWT_AUDIENCE, JWT_ISSUER, getJwtAccessSecret, hasPermission, isStaffRole, type Permission } from '@solar/shared';
 import { Prisma, PrismaClient } from './generated/prisma';
 import { SocialPublishService, type SocialNetworkCode } from './social';
+import { ContentEventsService } from './content-events';
 
 type AuthRequest = {
   headers: { authorization?: string };
@@ -471,7 +472,10 @@ export class CatalogService implements OnModuleInit, OnModuleDestroy {
   private readonly redis = new Redis(process.env.REDIS_URL ?? 'redis://localhost:6379', {
     lazyConnect: true, maxRetriesPerRequest: 1,
   });
-  constructor(private readonly db: PrismaService) {}
+  constructor(
+    private readonly db: PrismaService,
+    private readonly contentEvents: ContentEventsService,
+  ) {}
   async onModuleInit(): Promise<void> {
     await this.redis.connect().catch(() => undefined);
     // Drop stale product lists after seed / redeploy
@@ -558,14 +562,42 @@ export class CatalogService implements OnModuleInit, OnModuleDestroy {
   async createProduct(dto: ProductDto) {
     const value = await this.mapUnique(() => this.db.product.create({ data: dto }));
     await this.invalidate();
+    this.contentEvents.publish({
+      resource: value.kind === 'PROJECT' ? 'project' : 'product',
+      action: 'created',
+      id: value.id,
+      slug: value.slug,
+      kind: value.kind as 'PRODUCT' | 'PROJECT',
+    });
     return value;
   }
   async updateProduct(id: string, dto: UpdateProductDto) {
     const value = await this.mapUnique(() => this.db.product.update({ where: { id }, data: dto }));
     await this.invalidate();
+    this.contentEvents.publish({
+      resource: value.kind === 'PROJECT' ? 'project' : 'product',
+      action: 'updated',
+      id: value.id,
+      slug: value.slug,
+      kind: value.kind as 'PRODUCT' | 'PROJECT',
+    });
     return value;
   }
-  async deleteProduct(id: string) { await this.db.product.delete({ where: { id } }); await this.invalidate(); return { success: true }; }
+  async deleteProduct(id: string) {
+    const existing = await this.db.product.findUnique({ where: { id } });
+    await this.db.product.delete({ where: { id } });
+    await this.invalidate();
+    if (existing) {
+      this.contentEvents.publish({
+        resource: existing.kind === 'PROJECT' ? 'project' : 'product',
+        action: 'deleted',
+        id: existing.id,
+        slug: existing.slug,
+        kind: existing.kind as 'PRODUCT' | 'PROJECT',
+      });
+    }
+    return { success: true };
+  }
   articles(page = 1, limit = 20) {
     const safePage = Math.max(1, page);
     const safeLimit = Math.min(100, Math.max(1, limit));
@@ -576,11 +608,30 @@ export class CatalogService implements OnModuleInit, OnModuleDestroy {
     });
   }
   article(slug: string) { return this.db.article.findFirstOrThrow({ where: { slug, published: true } }); }
-  createArticle(dto: ArticleDto) { return this.mapUnique(() => this.db.article.create({ data: dto })); }
-  updateArticle(id: string, dto: UpdateArticleDto) { return this.mapUnique(() => this.db.article.update({ where: { id }, data: dto })); }
-  async deleteArticle(id: string) { await this.db.article.delete({ where: { id } }); return { success: true }; }
+  async createArticle(dto: ArticleDto) {
+    const value = await this.mapUnique(() => this.db.article.create({ data: dto }));
+    this.contentEvents.publish({ resource: 'article', action: 'created', id: value.id, slug: value.slug });
+    return value;
+  }
+  async updateArticle(id: string, dto: UpdateArticleDto) {
+    const value = await this.mapUnique(() => this.db.article.update({ where: { id }, data: dto }));
+    this.contentEvents.publish({ resource: 'article', action: 'updated', id: value.id, slug: value.slug });
+    return value;
+  }
+  async deleteArticle(id: string) {
+    const existing = await this.db.article.findUnique({ where: { id } });
+    await this.db.article.delete({ where: { id } });
+    if (existing) {
+      this.contentEvents.publish({ resource: 'article', action: 'deleted', id: existing.id, slug: existing.slug });
+    }
+    return { success: true };
+  }
   categories() { return this.db.category.findMany(); }
-  createCategory(dto: CategoryDto) { return this.mapUnique(() => this.db.category.create({ data: dto })); }
+  async createCategory(dto: CategoryDto) {
+    const value = await this.mapUnique(() => this.db.category.create({ data: dto }));
+    this.contentEvents.publish({ resource: 'category', action: 'created', id: value.id, slug: value.slug });
+    return value;
+  }
   pages() { return this.db.sitePage.findMany({ orderBy: { key: 'asc' } }); }
   page(key: string) { return this.db.sitePage.findUniqueOrThrow({ where: { key } }); }
   async upsertPage(key: string, dto: SitePageDto) {
@@ -590,6 +641,7 @@ export class CatalogService implements OnModuleInit, OnModuleDestroy {
       update: { title: dto.title, data: dto.data as Prisma.InputJsonValue },
     });
     await this.invalidate();
+    this.contentEvents.publish({ resource: 'page', action: 'updated', key });
     return value;
   }
 }

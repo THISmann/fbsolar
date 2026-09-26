@@ -7,6 +7,7 @@ import {
   AdminGuard, ArticlesController, CatalogService, CategoriesController, PagesController, PermissionsGuard,
   PrismaService, ProductsController,
 } from './catalog';
+import { ContentEventsService } from './content-events';
 import {
   FacebookPagePublisher, InstagramPublisher, LinkedInPublisher, PRISMA, SocialPublishService,
 } from './social';
@@ -18,6 +19,7 @@ import {
     AppService,
     PrismaService,
     { provide: PRISMA, useExisting: PrismaService },
+    ContentEventsService,
     CatalogService,
     AdminGuard,
     PermissionsGuard,

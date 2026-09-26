@@ -220,6 +220,11 @@ export function bindAuthTokenHandlers(getter: TokenGetter, refresher: TokenRefre
   refreshAccessToken = refresher;
 }
 
+/** Current access JWT if the admin session is active (for Socket.IO auth). */
+export function peekAccessToken(): string | null {
+  return getAccessToken();
+}
+
 async function parseError(response: Response): Promise<string> {
   let message = `Erreur ${response.status}`;
   try {
@@ -456,9 +461,18 @@ export const fallbackImages = [
   'https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=1600&q=80',
 ];
 
-export function productImage(product: Product, index = 0): string {
-  if (product.images?.length) return product.images[index % product.images.length];
-  return fallbackImages[index % fallbackImages.length];
+export function productImage(product: Product, index = 0, revision?: number | string): string {
+  const base = product.images?.length
+    ? product.images[index % product.images.length]
+    : fallbackImages[index % fallbackImages.length];
+  return withCacheBust(base, revision);
+}
+
+/** Bust browser/CDN cache after realtime content updates (same URL, new bytes). */
+export function withCacheBust(url: string, revision?: number | string | null): string {
+  if (revision === undefined || revision === null || revision === '' || revision === 0) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}r=${encodeURIComponent(String(revision))}`;
 }
 
 /** Strip control chars / trim — defense in depth before sending to API */

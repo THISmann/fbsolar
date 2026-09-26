@@ -22,13 +22,15 @@ import { ProductDetailPage } from './pages/ProductDetail';
 import { ProductsPage } from './pages/Products';
 import { ProjectDetailPage } from './pages/ProjectDetail';
 import { ProjectsPage } from './pages/Projects';
+import { RealtimeProvider } from './realtime/RealtimeProvider';
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <VisitTracker />
-        <Routes>
+      <RealtimeProvider>
+        <BrowserRouter>
+          <VisitTracker />
+          <Routes>
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route
             path="/admin"
@@ -158,7 +160,8 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </RealtimeProvider>
     </AuthProvider>
   );
 }

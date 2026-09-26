@@ -68,7 +68,8 @@ http:
 
     web:
       # Any host (localhost, VPS IP, domain) — SPA on everything except API/WS
-      rule: !PathPrefix(`/api`) && !PathPrefix(`/ws`)
+      # Quoted: YAML treats bare ! as a tag
+      rule: "!PathPrefix(`/api`) && !PathPrefix(`/ws`)"
       entryPoints: [web]
       service: web
       priority: 50
