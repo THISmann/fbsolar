@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { peekAccessToken } from '../lib/api';
+import { randomId } from '../lib/uuid';
 
 export type ContentResource = 'product' | 'project' | 'page' | 'category' | 'article' | 'contact' | 'media';
 
@@ -41,11 +42,11 @@ function ensureVisitorId(): string {
   try {
     const existing = localStorage.getItem(VISITOR_KEY);
     if (existing && existing.length <= 64) return existing;
-    const id = crypto.randomUUID();
+    const id = randomId();
     localStorage.setItem(VISITOR_KEY, id);
     return id;
   } catch {
-    return crypto.randomUUID();
+    return randomId();
   }
 }
 

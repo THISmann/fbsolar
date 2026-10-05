@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { api } from '../lib/api';
+import { randomId } from '../lib/uuid';
 
 const VISITOR_KEY = 'solar.visitor';
 
@@ -8,7 +9,7 @@ function visitorId(): string {
   try {
     const existing = localStorage.getItem(VISITOR_KEY);
     if (existing && existing.length <= 64) return existing;
-    const id = crypto.randomUUID();
+    const id = randomId();
     localStorage.setItem(VISITOR_KEY, id);
     return id;
   } catch {
