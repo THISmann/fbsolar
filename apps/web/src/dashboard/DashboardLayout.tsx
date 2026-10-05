@@ -4,6 +4,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { type Permission } from '../lib/permissions';
+import { useSeo } from '../lib/seo';
 import { AdminIcon, type IconName } from './AdminIcons';
 import './dashboard.scss';
 
@@ -64,6 +65,7 @@ export function DashboardLayout() {
   const { t } = useTranslation();
   const { user, logout, can, isSuperAdmin } = useAuth();
   const location = useLocation();
+  useSeo({ title: t('seo.adminTitle'), noindex: true });
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     try {

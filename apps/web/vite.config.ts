@@ -39,7 +39,7 @@ export default defineConfig({
         // App shell + hashed assets
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2,json}'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,

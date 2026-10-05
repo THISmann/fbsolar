@@ -9,7 +9,14 @@ async function bootstrap(): Promise<void> {
   assertSecurityConfig();
   const app = await NestFactory.create(AppModule);
   app.use(helmet({ contentSecurityPolicy: false }));
-  app.use(rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: 'draft-7', legacyHeaders: false }));
+  app.use(rateLimit({
+    windowMs: 60_000,
+    limit: 120,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    // Page renders arrive from the web container's nginx on behalf of every visitor.
+    skip: (req) => req.path.startsWith('/seo/') && !req.headers['x-forwarded-prefix'],
+  }));
   app.enableCors({ origin: corsOrigins(), credentials: true });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
   setupSwagger(app, {

@@ -3,24 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/brand/fb-solar-logo.png" />
+    <link rel="apple-touch-icon" href="/brand/fb-solar-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0d120a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <!-- The SEO renderer (service-catalog /seo/render) replaces everything between these markers per page. -->
+    <!--seo:head-->
+    <title>FB Solar Power Ltd | Panneaux solaires, batteries et onduleurs</title>
     <meta
       name="description"
-      content="FB Solar Power Ltd — Solar is the Solution. Installations photovoltaïques résidentielles et professionnelles."
+      content="Installateur photovoltaïque : étude, fourniture et pose de panneaux solaires, batteries lithium, onduleurs hybrides et kits solaires. Devis gratuit."
     />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="FB Solar Power Ltd" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:title" content="FB Solar Power Ltd | Panneaux solaires, batteries et onduleurs" />
+    <meta property="og:image" content="/brand/fb-solar-logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!--/seo:head-->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;1,400&family=Syne:wght@500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <title>FB Solar Power Ltd — Solar is the Solution</title>
+    <style>
+      .seo-snapshot { max-width: 72rem; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; line-height: 1.6; }
+      .seo-snapshot header, .seo-snapshot footer { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: center; justify-content: space-between; padding: 1rem 0; }
+      .seo-snapshot nav a { margin-right: 1rem; }
+      .seo-snapshot img { display: block; max-width: min(100%, 36rem); height: auto; }
+      .seo-snapshot table { border-collapse: collapse; margin: 1rem 0; }
+      .seo-snapshot th, .seo-snapshot td { padding: 0.35rem 0.75rem; text-align: left; border-bottom: 1px solid rgba(13, 18, 10, 0.12); }
+      .seo-snapshot .seo-list { list-style: none; padding: 0; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><!--seo:body--></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ProjectTile } from '../components/ProjectTile';
 import { Reveal } from '../components/Reveal';
 import { api, type Product } from '../lib/api';
+import { useSeo } from '../lib/seo';
 import { useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
@@ -35,6 +36,7 @@ export function ProjectsPage() {
   }, []);
 
   useRealtimeRefresh(['project', 'product'], () => void load());
+  useSeo({ title: t('seo.projectsTitle'), description: t('seo.projectsDescription'), path: '/projets' });
 
   return (
     <div className="page">

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { sanitizeText } from '../lib/api';
+import { useSeo } from '../lib/seo';
 import './dashboard.scss';
 
 export function AdminLoginPage() {
@@ -14,6 +15,7 @@ export function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  useSeo({ title: t('seo.adminTitle'), noindex: true });
 
   if (ready && isAdmin) {
     const from = (location.state as { from?: string } | null)?.from || '/admin';

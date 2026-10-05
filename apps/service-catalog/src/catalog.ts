@@ -1,6 +1,6 @@
 import {
   BadRequestException, Body, CanActivate, ConflictException, Controller, DefaultValuePipe, Delete, ExecutionContext, ForbiddenException, Get,
-  HttpCode, HttpStatus, Injectable, OnModuleDestroy, OnModuleInit, Param, ParseIntPipe, Patch, Post, Put, Query, Req,
+  HttpCode, HttpStatus, Injectable, NotFoundException, OnModuleDestroy, OnModuleInit, Param, ParseIntPipe, Patch, Post, Put, Query, Req,
   SetMetadata, UnauthorizedException, UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiProperty, ApiPropertyOptional, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -482,11 +482,13 @@ export class CatalogService implements OnModuleInit, OnModuleDestroy {
     if (!cacheKey) return load();
     return this.cached(cacheKey, load);
   }
-  product(slug: string, opts?: { includeDrafts?: boolean }) {
-    return this.db.product.findFirstOrThrow({
+  async product(slug: string, opts?: { includeDrafts?: boolean }) {
+    const product = await this.db.product.findFirst({
       where: { slug, published: opts?.includeDrafts ? undefined : true },
       include: { category: true },
     });
+    if (!product) throw new NotFoundException('Product not found');
+    return product;
   }
   productById(id: string) {
     return this.db.product.findUniqueOrThrow({ where: { id }, include: { category: true } });

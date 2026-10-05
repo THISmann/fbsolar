@@ -34,6 +34,21 @@
     "fr": "Français",
     "en": "English"
   },
+  "seo": {
+    "homeTitle": "FB Solar Power Ltd | Panneaux solaires, batteries et onduleurs",
+    "homeDescription": "Installateur photovoltaïque : étude, fourniture et pose de panneaux solaires, batteries lithium, onduleurs hybrides et kits solaires. Devis gratuit.",
+    "productsTitle": "Produits solaires : batteries lithium, onduleurs et kits | FB Solar Power Ltd",
+    "productsDescription": "Catalogue FB Solar Power Ltd : batteries lithium LiFePO4, onduleurs hybrides et off-grid, kits solaires et panneaux. Fiches techniques complètes, devis sur demande.",
+    "projectsTitle": "Réalisations photovoltaïques | FB Solar Power Ltd",
+    "projectsDescription": "Installations solaires résidentielles, tertiaires et agricoles réalisées par FB Solar Power Ltd : étude, pose et suivi de performance.",
+    "aboutTitle": "À propos | FB Solar Power Ltd",
+    "expertisesTitle": "Expertises : étude, pose et suivi solaire | FB Solar Power Ltd",
+    "contactTitle": "Contact et devis solaire gratuit | FB Solar Power Ltd",
+    "contactDescription": "Contactez FB Solar Power Ltd pour une étude ou un devis d’installation solaire : panneaux, batteries, onduleurs. Réponse rapide par téléphone, e-mail ou WhatsApp.",
+    "productTitle": "{{name}} | FB Solar Power Ltd",
+    "projectTitle": "{{name}} — Réalisation | FB Solar Power Ltd",
+    "adminTitle": "Administration | FB Solar Power Ltd"
+  },
   "offline": {
     "banner": "Hors ligne — affichage du contenu enregistré. Les actions en ligne (contact, admin) seront disponibles au retour du réseau."
   },

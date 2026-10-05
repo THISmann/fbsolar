@@ -8,15 +8,17 @@ import {
   PrismaService, ProductsController,
 } from './catalog';
 import { ContentEventsService } from './content-events';
+import { SeoController, SeoService } from './seo';
 import {
   FacebookPagePublisher, InstagramPublisher, LinkedInPublisher, PRISMA, SocialPublishService,
 } from './social';
 
 @Module({
   imports: [JwtModule.register({})],
-  controllers: [AppController, HealthController, ProductsController, ArticlesController, CategoriesController, PagesController],
+  controllers: [AppController, HealthController, ProductsController, ArticlesController, CategoriesController, PagesController, SeoController],
   providers: [
     AppService,
+    SeoService,
     PrismaService,
     { provide: PRISMA, useExisting: PrismaService },
     ContentEventsService,

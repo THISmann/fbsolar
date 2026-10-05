@@ -5,6 +5,7 @@ import { Reveal } from '../components/Reveal';
 import { api, productImage, type Product } from '../lib/api';
 import { formatFcfa } from '../lib/money';
 import { parseProductDescription } from '../lib/productContent';
+import { clip, useSeo } from '../lib/seo';
 import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 import './ProductDetail.scss';
@@ -37,6 +38,19 @@ export function ProductDetailPage() {
   useRealtimeRefresh(['product'], () => void load(), { slugs: slug ? [slug] : undefined });
 
   const content = useMemo(() => parseProductDescription(product?.description ?? ''), [product?.description]);
+
+  useSeo(
+    product
+      ? {
+          title: t('seo.productTitle', { name: product.name }),
+          description: clip(content.summary.join(' ') || product.name),
+          path: `/produits/${encodeURIComponent(product.slug)}`,
+          image: product.images?.[0],
+        }
+      : error
+        ? { title: t('products.notFound'), noindex: true }
+        : null,
+  );
 
   if (error) {
     return (
@@ -95,7 +109,11 @@ export function ProductDetailPage() {
                       aria-pressed={index === current}
                       onClick={() => setActiveImage(index)}
                     >
-                      <img src={productImage(product, index, revision)} alt="" loading="lazy" />
+                      <img
+                        src={productImage(product, index, revision)}
+                        alt={`${product.name} — ${t('products.showImage', { index: index + 1 })}`}
+                        loading="lazy"
+                      />
                     </button>
                   ))}
                 </div>

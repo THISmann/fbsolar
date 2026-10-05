@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router-dom';
 import { Reveal } from '../components/Reveal';
 import { api, productImage, type Product } from '../lib/api';
+import { clip, useSeo } from '../lib/seo';
 import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
@@ -30,6 +31,19 @@ export function ProjectDetailPage() {
   }, [slug, t]);
 
   useRealtimeRefresh(['project', 'product'], () => void load(), { slugs: slug ? [slug] : undefined });
+
+  useSeo(
+    product
+      ? {
+          title: t('seo.projectTitle', { name: product.name }),
+          description: clip(product.description || product.name),
+          path: `/projets/${encodeURIComponent(product.slug)}`,
+          image: product.images?.[0],
+        }
+      : error
+        ? { title: t('projects.notFound'), noindex: true }
+        : null,
+  );
 
   if (error) {
     return (
@@ -59,7 +73,7 @@ export function ProjectDetailPage() {
   return (
     <div className="page project-detail">
       <div className="project-detail__hero">
-        <img src={productImage(product, 0, revision)} alt="" />
+        <img src={productImage(product, 0, revision)} alt={product.name} />
         <div className="project-detail__hero-copy container">
           <p className="eyebrow">{product.category?.name ?? t('projects.fallbackCategory')}</p>
           <h1>{product.name}</h1>

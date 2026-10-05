@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ProjectTile } from '../components/ProjectTile';
 import { Reveal } from '../components/Reveal';
 import { api, fallbackImages, withCacheBust, type Product } from '../lib/api';
+import { useSeo } from '../lib/seo';
 import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Home.scss';
 
@@ -109,6 +110,7 @@ export function HomePage() {
   }, [defaults, i18n.language]);
 
   useRealtimeRefresh(['page', 'project', 'product'], () => void loadHome(), { keys: ['home'] });
+  useSeo({ title: t('seo.homeTitle'), description: t('seo.homeDescription'), path: '/', image: cms.heroImage });
 
   const expertises = cms.expertises?.length ? cms.expertises : defaults.expertises!;
   const heroSrc = withCacheBust(cms.heroImage || defaults.heroImage || '', revision);

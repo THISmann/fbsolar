@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Reveal } from '../components/Reveal';
 import { api, sanitizeText } from '../lib/api';
+import { useSeo } from '../lib/seo';
 import './Page.scss';
 
 type FormState = {
@@ -18,6 +19,7 @@ export function ContactPage() {
   const [form, setForm] = useState<FormState>(initial);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
+  useSeo({ title: t('seo.contactTitle'), description: t('seo.contactDescription'), path: '/contact' });
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

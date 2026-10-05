@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Reveal } from '../components/Reveal';
 import { api } from '../lib/api';
+import { clip, useSeo } from '../lib/seo';
 import { useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
@@ -45,6 +46,14 @@ export function ExpertisesPage() {
   useRealtimeRefresh(['page'], () => void load(), { keys: ['expertises'] });
 
   const items = cms.items?.length ? cms.items : defaults.items!;
+
+  useSeo({
+    title: t('seo.expertisesTitle'),
+    description: clip(
+      [cms.lead, ...items.map((item) => item.title)].filter(Boolean).join(' · ') || t('seo.homeDescription'),
+    ),
+    path: '/expertises',
+  });
 
   return (
     <div className="page">

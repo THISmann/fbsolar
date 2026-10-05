@@ -34,6 +34,21 @@
     "fr": "Français",
     "en": "English"
   },
+  "seo": {
+    "homeTitle": "FB Solar Power Ltd | Solar panels, batteries and inverters",
+    "homeDescription": "Solar installer: design, supply and installation of solar panels, lithium batteries, hybrid inverters and solar kits. Free quote.",
+    "productsTitle": "Solar products: lithium batteries, inverters and kits | FB Solar Power Ltd",
+    "productsDescription": "FB Solar Power Ltd catalogue: LiFePO4 lithium batteries, hybrid and off-grid inverters, solar kits and panels. Full datasheets, quote on request.",
+    "projectsTitle": "Solar projects | FB Solar Power Ltd",
+    "projectsDescription": "Residential, commercial and agricultural solar installations by FB Solar Power Ltd: design, installation and performance monitoring.",
+    "aboutTitle": "About us | FB Solar Power Ltd",
+    "expertisesTitle": "Expertise: solar design, installation and monitoring | FB Solar Power Ltd",
+    "contactTitle": "Contact and free solar quote | FB Solar Power Ltd",
+    "contactDescription": "Contact FB Solar Power Ltd for a solar installation study or quote: panels, batteries, inverters. Fast reply by phone, email or WhatsApp.",
+    "productTitle": "{{name}} | FB Solar Power Ltd",
+    "projectTitle": "{{name}} — Project | FB Solar Power Ltd",
+    "adminTitle": "Administration | FB Solar Power Ltd"
+  },
   "offline": {
     "banner": "You're offline — showing saved content. Online actions (contact, admin) will work again when you're back online."
   },

@@ -232,6 +232,19 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?set JWT_REFRESH_SECRET}
       SWAGGER_ENABLED: ${SWAGGER_ENABLED:-false}
       PUBLIC_SITE_URL: ${PUBLIC_SITE_URL:-http://localhost:5173}
+      SEO_SITE_URL: ${SEO_SITE_URL:-}
+      SEO_TEMPLATE_URL: http://web/index.html
+      SEO_BUSINESS_NAME: ${SEO_BUSINESS_NAME:-}
+      SEO_BUSINESS_PHONE: ${SEO_BUSINESS_PHONE:-}
+      SEO_BUSINESS_EMAIL: ${SEO_BUSINESS_EMAIL:-}
+      SEO_BUSINESS_STREET: ${SEO_BUSINESS_STREET:-}
+      SEO_BUSINESS_POSTAL_CODE: ${SEO_BUSINESS_POSTAL_CODE:-}
+      SEO_BUSINESS_CITY: ${SEO_BUSINESS_CITY:-}
+      SEO_BUSINESS_COUNTRY: ${SEO_BUSINESS_COUNTRY:-}
+      SEO_CURRENCY: ${SEO_CURRENCY:-XOF}
+      SEO_SAME_AS: ${SEO_SAME_AS:-}
+      SEO_GOOGLE_VERIFICATION: ${SEO_GOOGLE_VERIFICATION:-}
+      SEO_BING_VERIFICATION: ${SEO_BING_VERIFICATION:-}
       FACEBOOK_PAGE_ID: ${FACEBOOK_PAGE_ID:-}
       FACEBOOK_PAGE_ACCESS_TOKEN: ${FACEBOOK_PAGE_ACCESS_TOKEN:-}
       FACEBOOK_GRAPH_VERSION: ${FACEBOOK_GRAPH_VERSION:-v21.0}
@@ -394,7 +407,7 @@ services:
       - "traefik.http.routers.web.priority=50"
       - "traefik.http.services.web.loadbalancer.server.port=80"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/"]
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/index.html"]
       interval: 15s
       timeout: 5s
       retries: 5

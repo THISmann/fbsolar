@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Reveal } from '../components/Reveal';
 import { api, fallbackImages, withCacheBust } from '../lib/api';
+import { clip, useSeo } from '../lib/seo';
 import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
@@ -48,6 +49,13 @@ export function AboutPage() {
   const paragraphs = cms.paragraphs?.length ? cms.paragraphs : defaults.paragraphs!;
   const imageSrc = withCacheBust(cms.image || defaults.image || '', revision);
 
+  useSeo({
+    title: t('seo.aboutTitle'),
+    description: clip(paragraphs[0] || t('seo.homeDescription')),
+    path: '/a-propos',
+    image: cms.image,
+  });
+
   return (
     <div className="page">
       <header className="page-hero">
@@ -60,7 +68,7 @@ export function AboutPage() {
       <section className="page-section">
         <div className="container split">
           <Reveal>
-            <img className="split__media" src={imageSrc} alt="" />
+            <img className="split__media" src={imageSrc} alt={cms.title} />
           </Reveal>
           <Reveal delay={100}>
             {paragraphs.map((p) => (

@@ -15,7 +15,10 @@ function detectLang(): AppLang {
   } catch {
     /* ignore */
   }
-  const nav = typeof navigator !== 'undefined' ? navigator.language.toLowerCase() : 'fr';
+  if (typeof navigator === 'undefined') return 'fr';
+  // Crawlers report en-US; the indexed language must match the French catalogue content.
+  if (/bot|crawl|spider|slurp|facebookexternalhit|whatsapp|lighthouse/i.test(navigator.userAgent)) return 'fr';
+  const nav = navigator.language.toLowerCase();
   return nav.startsWith('en') ? 'en' : 'fr';
 }
 

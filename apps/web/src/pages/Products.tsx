@@ -5,6 +5,7 @@ import { Reveal } from '../components/Reveal';
 import { api, productImage, type Category, type Product } from '../lib/api';
 import { formatFcfa } from '../lib/money';
 import { productSummary } from '../lib/productContent';
+import { useSeo } from '../lib/seo';
 import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 import './Products.scss';
@@ -78,6 +79,8 @@ export function ProductsPage() {
     void loadProducts();
   });
 
+  useSeo({ title: t('seo.productsTitle'), description: t('seo.productsDescription'), path: '/produits' });
+
   const filters = useMemo(
     () => [{ slug: 'all', name: t('products.filterAll') }, ...categories],
     [categories, t],
@@ -145,7 +148,13 @@ export function ProductsPage() {
                 <Reveal key={product.id} delay={(index % 4) * 50}>
                   <article className="product-card">
                     <Link to={`/produits/${product.slug}`} className="product-card__media">
-                      <img src={productImage(product, index, revision)} alt="" loading="lazy" />
+                      <img
+                        src={productImage(product, index, revision)}
+                        alt={product.name}
+                        loading="lazy"
+                        width={1200}
+                        height={900}
+                      />
                     </Link>
                     <div className="product-card__body">
                       <span className="product-card__cat">
