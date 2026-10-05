@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ProjectTile } from '../components/ProjectTile';
 import { Reveal } from '../components/Reveal';
-import { WhatsAppFloat } from '../components/WhatsAppFloat';
 import { api, fallbackImages, withCacheBust, type Product } from '../lib/api';
 import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Home.scss';
@@ -27,9 +26,6 @@ type HomeData = {
   storyImage?: string;
   teamTitle?: string;
   teamText?: string;
-  whatsappEnabled?: boolean;
-  whatsappPhone?: string;
-  whatsappMessage?: string;
 };
 
 function buildDefaults(t: (key: string) => string): HomeData {
@@ -57,9 +53,6 @@ function buildDefaults(t: (key: string) => string): HomeData {
     storyImage: fallbackImages[2],
     teamTitle: t('home.defaults.teamTitle'),
     teamText: t('home.defaults.teamText'),
-    whatsappEnabled: true,
-    whatsappPhone: '+33 6 12 34 56 78',
-    whatsappMessage: 'Bonjour, je souhaite des informations sur une installation solaire.',
   };
 }
 
@@ -75,9 +68,6 @@ function mergeHomeCms(
     ...defaults,
     heroImage: cmsData.heroImage ?? defaults.heroImage,
     storyImage: cmsData.storyImage ?? defaults.storyImage,
-    whatsappEnabled: cmsData.whatsappEnabled ?? defaults.whatsappEnabled,
-    whatsappPhone: cmsData.whatsappPhone ?? defaults.whatsappPhone,
-    whatsappMessage: cmsData.whatsappMessage ?? defaults.whatsappMessage,
   };
 }
 
@@ -251,12 +241,6 @@ export function HomePage() {
           </Reveal>
         </div>
       </section>
-
-      <WhatsAppFloat
-        enabled={cms.whatsappEnabled !== false}
-        phone={cms.whatsappPhone}
-        message={cms.whatsappMessage}
-      />
     </div>
   );
 }

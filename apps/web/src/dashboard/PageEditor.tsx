@@ -125,7 +125,7 @@ export function PageEditor({ pageKey }: Props) {
                     checked={data.whatsappEnabled !== false}
                     onChange={(e) => setField('whatsappEnabled', e.target.checked)}
                   />
-                  Afficher le bouton WhatsApp sur l’accueil
+                  Afficher le bouton WhatsApp sur toutes les pages
                 </label>
               </div>
               <label>

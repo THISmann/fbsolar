@@ -12,6 +12,8 @@ import { JWT_AUDIENCE, JWT_ISSUER, getJwtAccessSecret, hasPermission, isStaffRol
 import { Prisma, PrismaClient } from './generated/prisma';
 import { SocialPublishService, type SocialNetworkCode } from './social';
 import { ContentEventsService } from './content-events';
+import { AURORA_PRODUCTS } from './seed-aurora';
+import { SOOBAAJO_PRODUCTS } from './seed-soobaajo';
 
 type AuthRequest = {
   headers: { authorization?: string };
@@ -57,86 +59,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       images: string[];
       kind?: 'PRODUCT' | 'PROJECT';
     }> = [
-      {
-        slug: 'panneau-mono-430w',
-        name: 'Panneau monocristallin 430 W',
-        description: 'Module haute efficacité pour toitures résidentielles. Cadre aluminium, verre trempé, garantie performance 25 ans.',
-        price: 125000,
-        category: 'panneaux-solaires',
-        images: ['https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'panneau-bi-facial-500w',
-        name: 'Panneau bi-facial 500 W',
-        description: 'Double face pour maximiser le rendement sur carports et ombrières. Idéal projets tertiaires.',
-        price: 170000,
-        category: 'panneaux-solaires',
-        images: ['https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'batterie-lithium-5kwh',
-        name: 'Batterie lithium 5 kWh',
-        description: 'Stockage résidentiel compact pour l’autoconsommation du soir. Monitoring intégré, cycle de vie élevé.',
-        price: 2150000,
-        category: 'batteries',
-        images: ['https://images.unsplash.com/photo-1620714223084-8fcacc6dfd8d?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'batterie-lithium-10kwh',
-        name: 'Batterie lithium 10 kWh',
-        description: 'Capacité familiale / petite entreprise. Modularité possible, compatible onduleurs hybrides courants.',
-        price: 3850000,
-        category: 'batteries',
-        images: ['https://images.unsplash.com/photo-1593941707881-a5b1ffdf6b6d?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'onduleur-string-6kw',
-        name: 'Onduleur string 6 kW',
-        description: 'Conversion DC/AC fiable pour installations mono-phase. Wifi, suivi de production en temps réel.',
-        price: 640000,
-        category: 'onduleurs',
-        images: ['https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'onduleur-hybride-8kw',
-        name: 'Onduleur hybride 8 kW',
-        description: 'Gestion panneaux + batterie + réseau. Mode secours, idéal autoconsommation avancée.',
-        price: 1400000,
-        category: 'onduleurs',
-        images: ['https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'structure-toit-tuile',
-        name: 'Kit structure toiture tuile',
-        description: 'Rails, crochets et fixations pour tuiles mécaniques. Acier inox / aluminium, pose soignée.',
-        price: 210000,
-        category: 'accessoires-outils',
-        images: ['https://images.unsplash.com/photo-1611365892117-00ac5ef43c90?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'coffret-dc-ac-protection',
-        name: 'Coffret de protection DC/AC',
-        description: 'Paraoudres, sectionneurs et disjoncteurs pré-câblés pour une mise en conformité simplifiée.',
-        price: 180000,
-        category: 'accessoires-outils',
-        images: ['https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'home-solar-kit',
-        name: 'Kit solaire maison 3 kWc',
-        description: 'Pack résidentiel prêt à poser : panneaux, onduleur string, structure et coffrets. Étude sur mesure possible.',
-        price: 3275000,
-        category: 'solar-kits',
-        images: ['https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'pro-solar-kit',
-        name: 'Kit solaire pro 9 kWc',
-        description: 'Solution tertiaire / grande toiture : modules haute puissance, onduleur adapté et monitoring.',
-        price: 5900000,
-        category: 'solar-kits',
-        images: ['https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80'],
-      },
       {
         slug: 'villa-lyon-6kwc',
         name: 'Villa Lyon — 6 kWc',
@@ -209,6 +131,26 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           kind,
           published: true,
         },
+      });
+    }
+
+    // Create-only: prices and copy are then managed from the admin dashboard.
+    for (const product of [...SOOBAAJO_PRODUCTS, ...AURORA_PRODUCTS]) {
+      const categoryId = categoryIds.get(product.category);
+      if (!categoryId) continue;
+      await this.product.upsert({
+        where: { slug: product.slug },
+        create: {
+          slug: product.slug,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          categoryId,
+          images: product.images,
+          kind: 'PRODUCT',
+          published: true,
+        },
+        update: {},
       });
     }
 
@@ -742,7 +684,7 @@ export class ProductsController {
 
   @Get(':slug')
   @ApiOperation({ summary: 'Get published product by slug' })
-  @ApiParam({ name: 'slug', example: 'home-solar-kit' })
+  @ApiParam({ name: 'slug', example: 'soo-11kw' })
   @ApiResponse({ status: 200 })
   @ApiResponse({ status: 404, description: 'Not found or unpublished' })
   one(@Param('slug') slug: string) { return this.catalog.product(slug); }

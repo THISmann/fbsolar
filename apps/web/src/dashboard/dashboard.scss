@@ -761,7 +761,8 @@ html.admin-nav-open body {
   gap: 0.5rem;
 }
 
-.image-upload__hint {
+.image-upload__hint,
+.admin-form__hint {
   margin: 0;
   font-size: 0.82rem;
   color: var(--color-muted);

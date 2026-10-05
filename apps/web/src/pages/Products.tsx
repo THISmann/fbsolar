@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Reveal } from '../components/Reveal';
 import { api, productImage, type Category, type Product } from '../lib/api';
 import { formatFcfa } from '../lib/money';
+import { productSummary } from '../lib/productContent';
 import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 import './Products.scss';
@@ -153,11 +154,15 @@ export function ProductsPage() {
                       <h2>
                         <Link to={`/produits/${product.slug}`}>{product.name}</Link>
                       </h2>
-                      <p>{product.description}</p>
+                      <p>{productSummary(product.description)}</p>
                       <div className="product-card__foot">
                         <div className="product-card__price">
                           <span>{t('products.priceLabel')}</span>
-                          <strong>{formatFcfa(product.price, locale)}</strong>
+                          <strong>
+                            {Number(product.price) > 0
+                              ? formatFcfa(product.price, locale)
+                              : t('products.priceOnRequest')}
+                          </strong>
                         </div>
                         <Link className="btn btn--solid" to={`/produits/${product.slug}`}>
                           {t('products.details')}

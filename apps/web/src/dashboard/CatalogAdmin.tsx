@@ -341,11 +341,12 @@ export function CatalogEditPage({ kind, basePath }: Props) {
           {t('admin.catalog.description')}
           <textarea
             required
-            rows={5}
+            rows={kind === 'PRODUCT' ? 14 : 5}
             maxLength={5000}
             value={form.description}
             onChange={(e) => update('description', e.target.value)}
           />
+          {kind === 'PRODUCT' && <p className="admin-form__hint">{t('admin.catalog.descriptionHint')}</p>}
         </label>
         <div className="admin-form__row">
           <label>

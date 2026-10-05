@@ -1,4 +1,10 @@
+import { useCallback, useEffect, useState } from 'react';
+import { api } from '../lib/api';
+import { useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './WhatsAppFloat.scss';
+
+const DEFAULT_PHONE = '+33 6 12 34 56 78';
+const DEFAULT_MESSAGE = 'Bonjour, je souhaite des informations sur une installation solaire.';
 
 type Props = {
   phone?: string;
@@ -40,4 +46,37 @@ export function WhatsAppFloat({ phone, message, enabled = true }: Props) {
       <span className="whatsapp-float__label">WhatsApp</span>
     </a>
   );
+}
+
+/** Site-wide button: settings live in the `home` CMS page (admin › WhatsApp). */
+export function SiteWhatsApp() {
+  const [settings, setSettings] = useState<Required<Props>>({
+    enabled: true,
+    phone: DEFAULT_PHONE,
+    message: DEFAULT_MESSAGE,
+  });
+
+  const load = useCallback(
+    () =>
+      api
+        .page('home')
+        .then((page) => {
+          const data = page.data as { whatsappEnabled?: boolean; whatsappPhone?: string; whatsappMessage?: string };
+          setSettings({
+            enabled: data.whatsappEnabled !== false,
+            phone: data.whatsappPhone || DEFAULT_PHONE,
+            message: data.whatsappMessage ?? DEFAULT_MESSAGE,
+          });
+        })
+        .catch(() => undefined),
+    [],
+  );
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useRealtimeRefresh(['page'], load, { keys: ['home'] });
+
+  return <WhatsAppFloat {...settings} />;
 }

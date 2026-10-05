@@ -481,6 +481,8 @@ export function sanitizeText(value: string, max = 5000): string {
 }
 
 export function isSafeHttpUrl(value: string): boolean {
+  // Root-relative paths (e.g. /products/x.jpg) are served by the site itself.
+  if (/^\/(?![/\\])/.test(value)) return true;
   try {
     const url = new URL(value);
     return url.protocol === 'https:' || url.protocol === 'http:';
