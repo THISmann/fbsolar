@@ -1,12 +1,13 @@
 # Deploy the Vite React SPA to Cloudflare Pages.
-# Backend (NestJS / Postgres / Redis) stays on the VPS; set VITE_API_BASE to that origin.
+# Backend stays on the VPS behind https://api.fb-solar.com (Cloudflare proxied).
 #
 # Required GitHub Secrets:
-#   CLOUDFLARE_API_TOKEN
-#   CLOUDFLARE_ACCOUNT_ID   (also accepts typo CLOUDFLARE_ACCOUND_ID)
-#   VITE_API_BASE           e.g. http://62.84.187.58
+#   CLOUDFLARE_API_TOKEN          Pages Edit + Zone DNS Edit (recommended)
+#   CLOUDFLARE_ACCOUNT_ID         (also accepts typo CLOUDFLARE_ACCOUND_ID)
+#   VITE_API_BASE                 e.g. https://api.fb-solar.com
 # Optional:
-#   CLOUDFLARE_PAGES_PROJECT_NAME  e.g. fbsolar (default: fbsolar)
+#   CLOUDFLARE_PAGES_PROJECT_NAME e.g. fbsolar (default: fbsolar)
+#   VPS_ORIGIN_IP                 e.g. 62.84.187.58 (default below)
 
 name: Deploy Cloudflare Pages
 
@@ -31,7 +32,7 @@ jobs:
   deploy:
     name: Build & deploy web
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     permissions:
       contents: read
       deployments: write
@@ -39,8 +40,9 @@ jobs:
     env:
       VITE_API_BASE: ${{ secrets.VITE_API_BASE || vars.VITE_API_BASE }}
       CLOUDFLARE_PAGES_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || vars.CLOUDFLARE_PAGES_PROJECT_NAME || 'fbsolar' }}
-      # Accept common typo ACCOUND_ID
       CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUND_ID }}
+      CUSTOM_DOMAIN: fb-solar.com
+      VPS_ORIGIN_IP: ${{ secrets.VPS_ORIGIN_IP || vars.VPS_ORIGIN_IP || '62.84.187.58' }}
 
     steps:
       - name: Checkout
@@ -58,7 +60,7 @@ jobs:
             missing=1
           fi
           if [ -z "$VITE_API_BASE" ]; then
-            echo "::error::Missing secret/variable VITE_API_BASE (e.g. http://62.84.187.58)"
+            echo "::error::Missing secret/variable VITE_API_BASE (e.g. https://api.fb-solar.com)"
             missing=1
           fi
           echo "API base: $VITE_API_BASE"
@@ -84,19 +86,14 @@ jobs:
         env:
           VITE_API_BASE: ${{ env.VITE_API_BASE }}
 
-      # npx --yes avoids pnpm/npm workspace install conflicts in this monorepo.
       - name: Ensure Cloudflare Pages project exists
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ env.CF_ACCOUNT_ID }}
         run: |
-          echo "Listing Pages projects on this account…"
           npx --yes wrangler@4 pages project list || true
           if ! npx --yes wrangler@4 pages project list 2>/dev/null | grep -qiE "(^| )${CLOUDFLARE_PAGES_PROJECT_NAME}( |$)"; then
-            echo "Creating Pages project: ${CLOUDFLARE_PAGES_PROJECT_NAME}"
             npx --yes wrangler@4 pages project create "${CLOUDFLARE_PAGES_PROJECT_NAME}" --production-branch=main
-          else
-            echo "Project already exists: ${CLOUDFLARE_PAGES_PROJECT_NAME}"
           fi
 
       - name: Deploy to Cloudflare Pages
@@ -108,11 +105,50 @@ jobs:
           --project-name="${CLOUDFLARE_PAGES_PROJECT_NAME}"
           --commit-dirty=true
 
-      - name: Attach fb-solar.com domains
+      - name: Attach domain + DNS (Pages + API)
         continue-on-error: true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ env.CF_ACCOUNT_ID }}
+          CF_ACCOUNT_ID: ${{ env.CF_ACCOUNT_ID }}
         run: |
-          npx --yes wrangler@4 pages domain add fb-solar.com --project-name="${CLOUDFLARE_PAGES_PROJECT_NAME}" || true
-          npx --yes wrangler@4 pages domain add www.fb-solar.com --project-name="${CLOUDFLARE_PAGES_PROJECT_NAME}" || true
+          set -uo pipefail
+          AUTH="Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
+          CT="Content-Type: application/json"
+          ZONE_JSON=$(curl -fsS -H "$AUTH" "https://api.cloudflare.com/client/v4/zones?name=${CUSTOM_DOMAIN}" || true)
+          ZONE_ID=$(printf '%s' "$ZONE_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('result') or []; print(r[0]['id'] if r else '')" 2>/dev/null || true)
+          if [ -z "$ZONE_ID" ]; then
+            echo "::warning::Zone ${CUSTOM_DOMAIN} not found or token lacks Zone:Read. Attach domains in the Cloudflare dashboard."
+            exit 0
+          fi
+          echo "Zone ID: $ZONE_ID"
+
+          for host in "$CUSTOM_DOMAIN" "www.$CUSTOM_DOMAIN"; do
+            resp=$(curl -sS -X POST -H "$AUTH" -H "$CT" \
+              "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PAGES_PROJECT_NAME}/domains" \
+              --data "{\"name\":\"${host}\"}" || true)
+            echo "$resp" | python3 -c "import sys,json; d=json.load(sys.stdin); print('${host}', '=> success=', d.get('success'), 'errors=', d.get('errors'))" || echo "$host => $resp"
+          done
+
+          PAGES_TARGET="${CLOUDFLARE_PAGES_PROJECT_NAME}.pages.dev"
+          upsert_dns() {
+            local name="$1" type="$2" content="$3"
+            local list existing body
+            list=$(curl -fsS -H "$AUTH" "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${name}&type=${type}" || true)
+            existing=$(printf '%s' "$list" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('result') or []; print(r[0]['id'] if r else '')" 2>/dev/null || true)
+            body=$(NAME="$name" TYPE="$type" CONTENT="$content" python3 -c 'import json,os; print(json.dumps({"type":os.environ["TYPE"],"name":os.environ["NAME"],"content":os.environ["CONTENT"],"proxied":True,"ttl":1}))')
+            if [ -n "$existing" ]; then
+              curl -fsS -X PUT -H "$AUTH" -H "$CT" \
+                "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${existing}" \
+                --data "$body" >/dev/null && echo "Updated DNS $type $name → $content"
+            else
+              curl -fsS -X POST -H "$AUTH" -H "$CT" \
+                "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" \
+                --data "$body" >/dev/null && echo "Created DNS $type $name → $content"
+            fi
+          }
+
+          upsert_dns "$CUSTOM_DOMAIN" "CNAME" "$PAGES_TARGET" || echo "::warning::Could not set apex CNAME (need Zone DNS Edit)"
+          upsert_dns "www.$CUSTOM_DOMAIN" "CNAME" "$PAGES_TARGET" || echo "::warning::Could not set www CNAME"
+          upsert_dns "api.$CUSTOM_DOMAIN" "A" "$VPS_ORIGIN_IP" || echo "::warning::Could not set api A record"
+
+          echo "Open https://${CUSTOM_DOMAIN} after DNS propagates (1–2 min)."
