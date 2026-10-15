@@ -122,6 +122,14 @@ jobs:
           fi
           echo "Zone ID: $ZONE_ID"
 
+          # VPS only serves HTTP:80 — Flexible avoids Cloudflare 521 on api.*
+          curl -sS -X PATCH -H "$AUTH" -H "$CT" \
+            "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/ssl" \
+            --data '{"value":"flexible"}' | python3 -c "import sys,json; d=json.load(sys.stdin); print('SSL mode =>', (d.get('result') or {}).get('value'), 'success=', d.get('success'), d.get('errors'))" || true
+          curl -sS -X PATCH -H "$AUTH" -H "$CT" \
+            "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/settings/always_use_https" \
+            --data '{"value":"on"}' >/dev/null || true
+
           for host in "$CUSTOM_DOMAIN" "www.$CUSTOM_DOMAIN"; do
             resp=$(curl -sS -X POST -H "$AUTH" -H "$CT" \
               "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CLOUDFLARE_PAGES_PROJECT_NAME}/domains" \
@@ -132,23 +140,24 @@ jobs:
           PAGES_TARGET="${CLOUDFLARE_PAGES_PROJECT_NAME}.pages.dev"
           upsert_dns() {
             local name="$1" type="$2" content="$3"
-            local list existing body
-            list=$(curl -fsS -H "$AUTH" "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${name}&type=${type}" || true)
-            existing=$(printf '%s' "$list" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('result') or []; print(r[0]['id'] if r else '')" 2>/dev/null || true)
+            local list existing body resp
+            list=$(curl -fsS -H "$AUTH" "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${name}" || true)
+            existing=$(printf '%s' "$list" | TYPE="$type" python3 -c "import sys,json,os; d=json.load(sys.stdin); t=os.environ['TYPE']; r=[x for x in (d.get('result') or []) if x.get('type')==t]; print(r[0]['id'] if r else '')" 2>/dev/null || true)
             body=$(NAME="$name" TYPE="$type" CONTENT="$content" python3 -c 'import json,os; print(json.dumps({"type":os.environ["TYPE"],"name":os.environ["NAME"],"content":os.environ["CONTENT"],"proxied":True,"ttl":1}))')
             if [ -n "$existing" ]; then
-              curl -fsS -X PUT -H "$AUTH" -H "$CT" \
+              resp=$(curl -sS -X PUT -H "$AUTH" -H "$CT" \
                 "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records/${existing}" \
-                --data "$body" >/dev/null && echo "Updated DNS $type $name → $content"
+                --data "$body" || true)
             else
-              curl -fsS -X POST -H "$AUTH" -H "$CT" \
+              resp=$(curl -sS -X POST -H "$AUTH" -H "$CT" \
                 "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records" \
-                --data "$body" >/dev/null && echo "Created DNS $type $name → $content"
+                --data "$body" || true)
             fi
+            echo "$resp" | NAME="$name" TYPE="$type" CONTENT="$content" python3 -c "import sys,json,os; d=json.load(sys.stdin); print(os.environ['TYPE'], os.environ['NAME'], '→', os.environ['CONTENT'], 'success=', d.get('success'), 'errors=', d.get('errors'))"
           }
 
           upsert_dns "$CUSTOM_DOMAIN" "CNAME" "$PAGES_TARGET" || echo "::warning::Could not set apex CNAME (need Zone DNS Edit)"
           upsert_dns "www.$CUSTOM_DOMAIN" "CNAME" "$PAGES_TARGET" || echo "::warning::Could not set www CNAME"
           upsert_dns "api.$CUSTOM_DOMAIN" "A" "$VPS_ORIGIN_IP" || echo "::warning::Could not set api A record"
 
-          echo "Open https://${CUSTOM_DOMAIN} after DNS propagates (1–2 min)."
+          echo "Open https://www.${CUSTOM_DOMAIN} / https://${CUSTOM_DOMAIN} after DNS propagates."
