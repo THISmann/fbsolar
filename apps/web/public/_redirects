@@ -1,3 +1,6 @@
+# Primary domain: fb-solar.com — send www traffic to the apex
+https://www.fb-solar.com/*  https://fb-solar.com/:splat  301
+http://www.fb-solar.com/*   https://fb-solar.com/:splat  301
+
 # Cloudflare Pages — SPA fallback (React Router)
-# https://developers.cloudflare.com/pages/configuration/redirects/
 /*    /index.html   200

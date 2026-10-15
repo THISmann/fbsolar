@@ -156,8 +156,15 @@ jobs:
             echo "$resp" | NAME="$name" TYPE="$type" CONTENT="$content" python3 -c "import sys,json,os; d=json.load(sys.stdin); print(os.environ['TYPE'], os.environ['NAME'], '→', os.environ['CONTENT'], 'success=', d.get('success'), 'errors=', d.get('errors'))"
           }
 
+          # Apex is the primary site domain; www also points at Pages (redirect handled in _redirects).
           upsert_dns "$CUSTOM_DOMAIN" "CNAME" "$PAGES_TARGET" || echo "::warning::Could not set apex CNAME (need Zone DNS Edit)"
           upsert_dns "www.$CUSTOM_DOMAIN" "CNAME" "$PAGES_TARGET" || echo "::warning::Could not set www CNAME"
           upsert_dns "api.$CUSTOM_DOMAIN" "A" "$VPS_ORIGIN_IP" || echo "::warning::Could not set api A record"
 
-          echo "Open https://www.${CUSTOM_DOMAIN} / https://${CUSTOM_DOMAIN} after DNS propagates."
+          # Prefer apex as canonical host (www → fb-solar.com) via a dynamic Redirect Rule if permitted.
+          curl -sS -X POST -H "$AUTH" -H "$CT" \
+            "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/rulesets" \
+            --data "{\"name\":\"redirect www to apex\",\"kind\":\"zone\",\"phase\":\"http_request_dynamic_redirect\",\"rules\":[{\"ref\":\"www_to_apex\",\"description\":\"www → apex\",\"enabled\":true,\"action\":\"redirect\",\"expression\":\"(http.host eq \\\"www.${CUSTOM_DOMAIN}\\\")\",\"action_parameters\":{\"from_value\":{\"status_code\":301,\"target_url\":{\"expression\":\"concat(\\\"https://${CUSTOM_DOMAIN}\\\", http.request.uri.path)\"},\"preserve_query_string\":true}}}]}" \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); print('Redirect ruleset => success=', d.get('success'), 'errors=', d.get('errors'))" || true
+
+          echo "Primary site: https://${CUSTOM_DOMAIN}"
