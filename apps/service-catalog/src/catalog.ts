@@ -50,87 +50,58 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       categoryIds.set(cat.slug, row.id);
     }
 
-    const products: Array<{
+    // Remove former demo projects that are no longer showcased.
+    await this.product.deleteMany({
+      where: {
+        kind: 'PROJECT',
+        slug: {
+          in: [
+            'villa-lyon-6kwc',
+            'entrepot-saint-etienne',
+            'maison-annecy-carport',
+            'commerce-grenoble',
+            'ferme-drome',
+          ],
+        },
+      },
+    });
+
+    // Create-only showcase projects (copy/images then managed from admin).
+    const projects: Array<{
       slug: string;
       name: string;
       description: string;
-      price: number;
-      category: string;
       images: string[];
-      kind?: 'PRODUCT' | 'PROJECT';
     }> = [
       {
-        slug: 'villa-lyon-6kwc',
-        name: 'Villa Lyon — 6 kWc',
-        description: 'Installation résidentielle intégrée tuiles, autoconsommation et monitoring.',
-        price: 0,
-        category: 'realisations',
-        kind: 'PROJECT',
-        images: ['https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'entrepot-saint-etienne',
-        name: 'Entrepôt Saint-Étienne — 120 kWc',
-        description: 'Ombrière et toiture industrielle, raccordement HTA et suivi de performance.',
-        price: 0,
-        category: 'realisations',
-        kind: 'PROJECT',
-        images: ['https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'maison-annecy-carport',
-        name: 'Maison Annecy — carport 9 kWc',
-        description: 'Carport photovoltaïque + batterie 10 kWh pour une famille en montagne.',
-        price: 0,
-        category: 'realisations',
-        kind: 'PROJECT',
-        images: ['https://images.unsplash.com/photo-1559302504-64aae6ca6b6d?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'commerce-grenoble',
-        name: 'Commerce Grenoble — 18 kWc',
-        description: 'Toiture tertiaire, optimisation d’autoconsommation sur horaires d’ouverture.',
-        price: 0,
-        category: 'realisations',
-        kind: 'PROJECT',
-        images: ['https://images.unsplash.com/photo-1497440001374-f26997328c1b?auto=format&fit=crop&w=1200&q=80'],
-      },
-      {
-        slug: 'ferme-drome',
-        name: 'Exploitation Drôme — 45 kWc',
-        description: 'Hangar agricole, structure renforcée et monitoring multi-string.',
-        price: 0,
-        category: 'realisations',
-        kind: 'PROJECT',
-        images: ['https://images.unsplash.com/photo-1611365892117-00ac5ef43c90?auto=format&fit=crop&w=1200&q=80'],
+        slug: 'installation-solaire-batterie-douala',
+        name: 'Installation solaire avec batterie à Douala',
+        description:
+          'Réalisation FB Solar Power Ltd à Douala : centrale photovoltaïque en toiture, onduleurs SOOBAAJO et stockage lithium Aurora. Étude, pose et mise en service pour une autonomie fiable en milieu urbain.',
+        images: [
+          '/projects/douala-1.webp',
+          '/projects/douala-2.webp',
+          '/projects/douala-3.webp',
+        ],
       },
     ];
 
-    for (const product of products) {
-      const categoryId = categoryIds.get(product.category);
+    for (const project of projects) {
+      const categoryId = categoryIds.get('realisations');
       if (!categoryId) continue;
-      const kind = product.kind ?? 'PRODUCT';
       await this.product.upsert({
-        where: { slug: product.slug },
+        where: { slug: project.slug },
         create: {
-          slug: product.slug,
-          name: product.name,
-          description: product.description,
-          price: product.price,
+          slug: project.slug,
+          name: project.name,
+          description: project.description,
+          price: 0,
           categoryId,
-          images: product.images,
-          kind,
+          images: project.images,
+          kind: 'PROJECT',
           published: true,
         },
-        update: {
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          categoryId,
-          images: product.images,
-          kind,
-          published: true,
-        },
+        update: {},
       });
     }
 

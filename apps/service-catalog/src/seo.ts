@@ -509,6 +509,9 @@ export class SeoService {
     const imageTag = images[0] ? `<img src="${esc(images[0])}" alt="${esc(item.name)}">` : '';
 
     if (kind === 'PROJECT') {
+      const gallery = images
+        .map((src, index) => `<img src="${esc(src)}" alt="${esc(`${item.name} — photo ${index + 1}`)}">`)
+        .join('');
       return {
         status: 200,
         meta: {
@@ -522,7 +525,7 @@ export class SeoService {
         },
         body: `${breadcrumbNav(trail)}<article>${imageTag}<p>${esc(category)}</p><h1>${esc(item.name)}</h1><p>${esc(
           item.description,
-        )}</p><p><a href="/contact">Discuter d’un projet similaire</a></p></article>`,
+        )}</p>${gallery}<p><a href="/contact">Discuter d’un projet similaire</a></p></article>`,
       };
     }
 

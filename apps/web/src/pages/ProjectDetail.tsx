@@ -8,12 +8,12 @@ import { useRealtime, useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './Page.scss';
 
 export function ProjectDetailPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { slug = '' } = useParams();
   const { revision } = useRealtime();
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const locale = i18n.language.startsWith('en') ? 'en-GB' : 'fr-FR';
+  const [activeImage, setActiveImage] = useState(0);
 
   const load = () =>
     api
@@ -27,6 +27,7 @@ export function ProjectDetailPage() {
       });
 
   useEffect(() => {
+    setActiveImage(0);
     void load();
   }, [slug, t]);
 
@@ -68,12 +69,13 @@ export function ProjectDetailPage() {
     );
   }
 
-  const price = product.price.toLocaleString(locale, { style: 'currency', currency: 'EUR' });
+  const imageCount = Math.max(product.images?.length ?? 0, 1);
+  const current = Math.min(activeImage, imageCount - 1);
 
   return (
     <div className="page project-detail">
       <div className="project-detail__hero">
-        <img src={productImage(product, 0, revision)} alt={product.name} />
+        <img src={productImage(product, current, revision)} alt={product.name} />
         <div className="project-detail__hero-copy container">
           <p className="eyebrow">{product.category?.name ?? t('projects.fallbackCategory')}</p>
           <h1>{product.name}</h1>
@@ -83,7 +85,23 @@ export function ProjectDetailPage() {
         <div className="container project-detail__body">
           <Reveal>
             <p>{product.description}</p>
-            <p className="project-detail__price">{t('projects.priceFrom', { price })}</p>
+            {imageCount > 1 && (
+              <div className="project-detail__gallery" role="list">
+                {product.images.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    role="listitem"
+                    className={index === current ? 'is-active' : undefined}
+                    aria-label={t('products.showImage', { index: index + 1 })}
+                    aria-pressed={index === current}
+                    onClick={() => setActiveImage(index)}
+                  >
+                    <img src={productImage(product, index, revision)} alt="" loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            )}
             <Link className="btn btn--solid" to="/contact">
               {t('projects.ctaContact')}
             </Link>

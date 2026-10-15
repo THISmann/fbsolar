@@ -166,6 +166,35 @@
   padding-bottom: 2.5rem;
 }
 
+.project-detail__gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 1.5rem 0 1.75rem;
+}
+
+.project-detail__gallery button {
+  appearance: none;
+  border: 1px solid transparent;
+  padding: 0;
+  margin: 0;
+  background: var(--color-sand);
+  cursor: pointer;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+}
+
+.project-detail__gallery button.is-active {
+  border-color: var(--color-forest);
+}
+
+.project-detail__gallery img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .project-detail__body {
   max-width: 40rem;
 }
