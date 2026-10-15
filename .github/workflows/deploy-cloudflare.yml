@@ -84,12 +84,14 @@ jobs:
         env:
           VITE_API_BASE: ${{ env.VITE_API_BASE }}
 
+      # Use npm for Wrangler: pnpm refuses to add packages at the monorepo root without -w.
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CF_ACCOUNT_ID }}
+          packageManager: npm
           command: pages deploy apps/web/dist --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT_NAME }} --commit-dirty=true
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
@@ -99,6 +101,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CF_ACCOUNT_ID }}
+          packageManager: npm
           command: pages domain add fb-solar.com --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT_NAME }}
 
       - name: Attach www.fb-solar.com
@@ -107,4 +110,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ env.CF_ACCOUNT_ID }}
+          packageManager: npm
           command: pages domain add www.fb-solar.com --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT_NAME }}
