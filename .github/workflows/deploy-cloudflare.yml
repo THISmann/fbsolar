@@ -85,6 +85,20 @@ jobs:
           VITE_API_BASE: ${{ env.VITE_API_BASE }}
 
       # npx --yes avoids pnpm/npm workspace install conflicts in this monorepo.
+      - name: Ensure Cloudflare Pages project exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ env.CF_ACCOUNT_ID }}
+        run: |
+          echo "Listing Pages projects on this account…"
+          npx --yes wrangler@4 pages project list || true
+          if ! npx --yes wrangler@4 pages project list 2>/dev/null | grep -qiE "(^| )${CLOUDFLARE_PAGES_PROJECT_NAME}( |$)"; then
+            echo "Creating Pages project: ${CLOUDFLARE_PAGES_PROJECT_NAME}"
+            npx --yes wrangler@4 pages project create "${CLOUDFLARE_PAGES_PROJECT_NAME}" --production-branch=main
+          else
+            echo "Project already exists: ${CLOUDFLARE_PAGES_PROJECT_NAME}"
+          fi
+
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
