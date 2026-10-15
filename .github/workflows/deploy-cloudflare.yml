@@ -1,0 +1,110 @@
+# Deploy the Vite React SPA to Cloudflare Pages.
+# Backend (NestJS / Postgres / Redis) stays on the VPS; set VITE_API_BASE to that origin.
+#
+# Required GitHub Secrets:
+#   CLOUDFLARE_API_TOKEN
+#   CLOUDFLARE_ACCOUNT_ID   (also accepts typo CLOUDFLARE_ACCOUND_ID)
+#   VITE_API_BASE           e.g. http://62.84.187.58
+# Optional:
+#   CLOUDFLARE_PAGES_PROJECT_NAME  e.g. fbsolar (default: fbsolar)
+
+name: Deploy Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - '.github/workflows/deploy-cloudflare.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & deploy web
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      deployments: write
+
+    env:
+      VITE_API_BASE: ${{ secrets.VITE_API_BASE || vars.VITE_API_BASE }}
+      CLOUDFLARE_PAGES_PROJECT_NAME: ${{ secrets.CLOUDFLARE_PAGES_PROJECT_NAME || vars.CLOUDFLARE_PAGES_PROJECT_NAME || 'fbsolar' }}
+      # Accept common typo ACCOUND_ID
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUND_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required config
+        run: |
+          missing=0
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::Missing secret CLOUDFLARE_API_TOKEN"
+            missing=1
+          fi
+          if [ -z "$CF_ACCOUNT_ID" ]; then
+            echo "::error::Missing secret CLOUDFLARE_ACCOUNT_ID (or CLOUDFLARE_ACCOUND_ID)"
+            missing=1
+          fi
+          if [ -z "$VITE_API_BASE" ]; then
+            echo "::error::Missing secret/variable VITE_API_BASE (e.g. http://62.84.187.58)"
+            missing=1
+          fi
+          echo "API base: $VITE_API_BASE"
+          echo "Pages project: $CLOUDFLARE_PAGES_PROJECT_NAME"
+          exit $missing
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build @solar/web
+        run: pnpm turbo run build --filter="@solar/web..."
+        env:
+          VITE_API_BASE: ${{ env.VITE_API_BASE }}
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CF_ACCOUNT_ID }}
+          command: pages deploy apps/web/dist --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT_NAME }} --commit-dirty=true
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attach fb-solar.com domains
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CF_ACCOUNT_ID }}
+          command: pages domain add fb-solar.com --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT_NAME }}
+
+      - name: Attach www.fb-solar.com
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CF_ACCOUNT_ID }}
+          command: pages domain add www.fb-solar.com --project-name=${{ env.CLOUDFLARE_PAGES_PROJECT_NAME }}
