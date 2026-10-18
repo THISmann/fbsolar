@@ -16,8 +16,8 @@ export function Footer() {
             <Link className="btn btn--light" to="/contact">
               {t('footer.ctaContact')}
             </Link>
-            <a className="btn btn--ghost-light" href="tel:+33123456789">
-              01 23 45 67 89
+            <a className="btn btn--ghost-light" href="tel:+237680108852">
+              +237 6 80 10 88 52
             </a>
           </div>
         </div>
@@ -31,12 +31,12 @@ export function Footer() {
             </Link>
             <p className="footer__tagline">{t('common.tagline')}</p>
             <p>
-              12 avenue du Soleil
+              Akwa immeuble de pompier
               <br />
-              69003 Lyon
+              Douala
             </p>
             <p>
-              <a href="mailto:contact@fbsolar.local">contact@fbsolar.local</a>
+              <a href="mailto:contact@fb-solar.com">contact@fb-solar.com</a>
             </p>
           </div>
           <nav aria-label={t('nav.footer')}>

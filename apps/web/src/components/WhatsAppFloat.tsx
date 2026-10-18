@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 import { useRealtimeRefresh } from '../realtime/RealtimeProvider';
 import './WhatsAppFloat.scss';
 
-const DEFAULT_PHONE = '+33 6 12 34 56 78';
+const DEFAULT_PHONE = '+237 6 80 10 88 52';
 const DEFAULT_MESSAGE = 'Bonjour, je souhaite des informations sur une installation solaire.';
 
 type Props = {

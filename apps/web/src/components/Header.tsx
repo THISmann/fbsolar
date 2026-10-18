@@ -82,8 +82,8 @@ export function Header() {
           <div className="header__nav-lang">
             <LanguageSwitcher compact />
           </div>
-          <a className="header__nav-phone" href="tel:+33123456789">
-            01 23 45 67 89
+          <a className="header__nav-phone" href="tel:+237680108852">
+            +237 6 80 10 88 52
           </a>
         </nav>
 
@@ -91,8 +91,8 @@ export function Header() {
           <div className="header__lang-mobile">
             <LanguageSwitcher compact />
           </div>
-          <a className="header__phone" href="tel:+33123456789">
-            01 23 45 67 89
+          <a className="header__phone" href="tel:+237680108852">
+            +237 6 80 10 88 52
           </a>
         </div>
       </div>

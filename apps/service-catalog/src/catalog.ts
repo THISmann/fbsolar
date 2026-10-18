@@ -170,7 +170,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           teamText:
             'Derrière chaque installation : ingénieurs, poseurs et conseillers. Notre état d’esprit ? Voir plus loin que le panneau — tout faire pour qu’un projet tienne sur le long terme.',
           whatsappEnabled: true,
-          whatsappPhone: '+33 6 12 34 56 78',
+          whatsappPhone: '+237 6 80 10 88 52',
           whatsappMessage: 'Bonjour, je souhaite des informations sur une installation solaire.',
         },
       },
@@ -233,8 +233,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
         data.whatsappEnabled = true;
         changed = true;
       }
-      if (!('whatsappPhone' in data) || !data.whatsappPhone) {
-        data.whatsappPhone = '+33 6 12 34 56 78';
+      // Keep the public WhatsApp number in sync with the live contact line.
+      if (data.whatsappPhone !== '+237 6 80 10 88 52') {
+        data.whatsappPhone = '+237 6 80 10 88 52';
         changed = true;
       }
       if (!('whatsappMessage' in data)) {

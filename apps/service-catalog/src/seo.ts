@@ -77,13 +77,13 @@ function business() {
   return {
     name: env('SEO_BUSINESS_NAME', 'FB Solar Power Ltd'),
     slogan: 'Solar is the Solution',
-    phone: env('SEO_BUSINESS_PHONE', '+33 1 23 45 67 89'),
-    email: env('SEO_BUSINESS_EMAIL', 'contact@fbsolar.local'),
-    street: env('SEO_BUSINESS_STREET', '12 avenue du Soleil'),
-    postalCode: env('SEO_BUSINESS_POSTAL_CODE', '69003'),
-    city: env('SEO_BUSINESS_CITY', 'Lyon'),
-    country: env('SEO_BUSINESS_COUNTRY', 'FR'),
-    currency: env('SEO_CURRENCY', 'XOF'),
+    phone: env('SEO_BUSINESS_PHONE', '+237 6 80 10 88 52'),
+    email: env('SEO_BUSINESS_EMAIL', 'contact@fb-solar.com'),
+    street: env('SEO_BUSINESS_STREET', 'Akwa immeuble de pompier'),
+    postalCode: env('SEO_BUSINESS_POSTAL_CODE', ''),
+    city: env('SEO_BUSINESS_CITY', 'Douala'),
+    country: env('SEO_BUSINESS_COUNTRY', 'CM'),
+    currency: env('SEO_CURRENCY', 'XAF'),
     sameAs: env('SEO_SAME_AS', '')
       .split(',')
       .map((s) => s.trim())

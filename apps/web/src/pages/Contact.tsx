@@ -57,14 +57,14 @@ export function ContactPage() {
               <p>
                 <strong>{t('common.brandFull')}</strong>
                 <br />
-                12 avenue du Soleil
+                Akwa immeuble de pompier
                 <br />
-                69003 Lyon
+                Douala
               </p>
               <p>
-                <a href="tel:+33123456789">01 23 45 67 89</a>
+                <a href="tel:+237680108852">+237 6 80 10 88 52</a>
                 <br />
-                <a href="mailto:contact@fbsolar.local">contact@fbsolar.local</a>
+                <a href="mailto:contact@fb-solar.com">contact@fb-solar.com</a>
               </p>
             </div>
           </Reveal>

@@ -30,7 +30,7 @@ export function WhatsAppSettingsPage() {
         setPageTitle(page.title || t('admin.nav.home'));
         setData(payload);
         setEnabled(payload.whatsappEnabled !== false);
-        setPhone(asString(payload.whatsappPhone, '+33 6 12 34 56 78'));
+        setPhone(asString(payload.whatsappPhone, '+237 6 80 10 88 52'));
         setMessage(asString(payload.whatsappMessage, ''));
         setError(null);
       })
@@ -112,7 +112,7 @@ export function WhatsAppSettingsPage() {
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+33 6 12 34 56 78"
+                placeholder="+237 6 80 10 88 52"
                 maxLength={30}
                 required={enabled}
                 inputMode="tel"

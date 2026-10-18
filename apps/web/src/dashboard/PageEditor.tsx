@@ -129,11 +129,11 @@ export function PageEditor({ pageKey }: Props) {
                 </label>
               </div>
               <label>
-                Numéro WhatsApp (format international, ex. +33 6 12 34 56 78)
+                Numéro WhatsApp (format international, ex. +237 6 80 10 88 52)
                 <input
                   value={asString(data.whatsappPhone)}
                   onChange={(e) => setField('whatsappPhone', e.target.value)}
-                  placeholder="+33 6 12 34 56 78"
+                  placeholder="+237 6 80 10 88 52"
                   maxLength={30}
                 />
               </label>
