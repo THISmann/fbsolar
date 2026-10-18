@@ -41,20 +41,20 @@ const CATALOG_ORDER = ['panneaux-solaires', 'batteries', 'onduleurs', 'accessoir
 
 // Wording mirrors the "seo" keys of apps/web/src/i18n/locales/fr.json so crawlers and the SPA agree.
 const TEXT = {
-  homeTitle: 'FB Solar Power Ltd | Panneaux solaires, batteries et onduleurs',
+  homeTitle: 'FB Solar | Panneau solaire au Cameroun — Douala',
   homeDescription:
-    'Installateur photovoltaïque : étude, fourniture et pose de panneaux solaires, batteries lithium, onduleurs hybrides et kits solaires. Devis gratuit.',
-  productsTitle: 'Produits solaires : batteries lithium, onduleurs et kits | FB Solar Power Ltd',
+    'FB Solar Power Ltd (fb-solar) : panneaux solaires, batteries lithium et onduleurs au Cameroun (Douala). Étude, pose et devis WhatsApp.',
+  productsTitle: 'Panneaux solaires, batteries et onduleurs au Cameroun | FB Solar',
   productsDescription:
-    'Catalogue FB Solar Power Ltd : batteries lithium LiFePO4, onduleurs hybrides et off-grid, kits solaires et panneaux. Fiches techniques complètes, devis sur demande.',
-  projectsTitle: 'Réalisations photovoltaïques | FB Solar Power Ltd',
+    'Catalogue FB Solar (fb-solar) au Cameroun : batteries lithium LiFePO4, onduleurs hybrides, kits et panneaux solaires. Fiches techniques, devis à Douala.',
+  projectsTitle: 'Installations solaires au Cameroun | FB Solar Douala',
   projectsDescription:
-    'Installations solaires résidentielles, tertiaires et agricoles réalisées par FB Solar Power Ltd : étude, pose et suivi de performance.',
-  aboutTitle: 'À propos | FB Solar Power Ltd',
-  expertisesTitle: 'Expertises : étude, pose et suivi solaire | FB Solar Power Ltd',
-  contactTitle: 'Contact et devis solaire gratuit | FB Solar Power Ltd',
+    'Réalisations FB Solar au Cameroun : installations solaires résidentielles et professionnelles à Douala — étude, pose et suivi de performance.',
+  aboutTitle: 'À propos de FB Solar Power Ltd | Douala, Cameroun',
+  expertisesTitle: 'Expertise solaire au Cameroun : étude, pose et suivi | FB Solar',
+  contactTitle: 'Devis panneau solaire Cameroun | Contact FB Solar Douala',
   contactDescription:
-    'Contactez FB Solar Power Ltd pour une étude ou un devis d’installation solaire : panneaux, batteries, onduleurs. Réponse rapide par téléphone, e-mail ou WhatsApp.',
+    'Contactez FB Solar (fb-solar) à Douala pour un devis panneau solaire au Cameroun : WhatsApp +237 6 80 10 88 52, contact@fb-solar.com.',
   notFoundTitle: 'Page introuvable | FB Solar Power Ltd',
   adminTitle: 'Administration | FB Solar Power Ltd',
 };
@@ -654,6 +654,7 @@ export class SeoService {
           '@type': 'LocalBusiness',
           '@id': `${base}/#business`,
           name: biz.name,
+          alternateName: ['FB Solar', 'fb-solar', 'FB Solar Power'],
           slogan: biz.slogan,
           description: TEXT.homeDescription,
           url: `${base}/`,
@@ -662,20 +663,39 @@ export class SeoService {
           telephone: biz.phone,
           email: biz.email,
           currenciesAccepted: biz.currency,
+          priceRange: '$$',
           address: {
             '@type': 'PostalAddress',
             streetAddress: biz.street,
-            postalCode: biz.postalCode,
+            postalCode: biz.postalCode || undefined,
             addressLocality: biz.city,
+            addressRegion: 'Littoral',
             addressCountry: biz.country,
           },
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: 4.0511,
+            longitude: 9.7679,
+          },
+          areaServed: [
+            { '@type': 'Country', name: 'Cameroon' },
+            { '@type': 'City', name: 'Douala' },
+          ],
+          knowsAbout: [
+            'panneau solaire',
+            'photovoltaïque',
+            'batterie lithium LiFePO4',
+            'onduleur hybride',
+            'installation solaire Cameroun',
+          ],
           sameAs: biz.sameAs.length ? biz.sameAs : undefined,
         },
         {
           '@type': 'WebSite',
           '@id': `${base}/#website`,
           url: `${base}/`,
-          name: biz.name,
+          name: 'FB Solar',
+          alternateName: ['fb-solar', biz.name],
           inLanguage: 'fr-FR',
           publisher: { '@id': `${base}/#business` },
         },
@@ -686,8 +706,14 @@ export class SeoService {
     const tags = [
       `<title>${esc(meta.title)}</title>`,
       `<meta name="description" content="${esc(meta.description)}" />`,
+      `<meta name="keywords" content="FB Solar, fb-solar, panneau solaire Cameroun, panneau solaire Douala, installation solaire Cameroun, batterie lithium, onduleur hybride" />`,
       `<meta name="robots" content="${meta.noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'}" />`,
+      `<meta name="geo.region" content="CM-LT" />`,
+      `<meta name="geo.placename" content="Douala" />`,
+      `<meta name="geo.position" content="4.0511;9.7679" />`,
+      `<meta name="ICBM" content="4.0511, 9.7679" />`,
       meta.noindex ? '' : `<link rel="canonical" href="${esc(canonical)}" />`,
+      `<link rel="alternate" type="text/plain" title="llms.txt" href="${esc(base)}/llms.txt" />`,
       `<meta property="og:type" content="${meta.type ?? 'website'}" />`,
       `<meta property="og:site_name" content="${esc(biz.name)}" />`,
       `<meta property="og:locale" content="fr_FR" />`,
@@ -714,7 +740,7 @@ export class SeoService {
     const nav = NAV.map(([href, label]) => `<a href="${href}">${esc(label)}</a>`).join('');
     return `<div class="seo-snapshot"><header><a href="/" class="seo-brand">${esc(biz.name)}</a><nav aria-label="Principale">${nav}</nav></header><main>${main}</main><footer><p><strong>${esc(
       biz.name,
-    )}</strong> — ${esc(biz.slogan)}. Installateur photovoltaïque · conception, pose &amp; suivi.</p><address>${esc(biz.street)}, ${esc(
+    )}</strong> — ${esc(biz.slogan)}. Panneau solaire au Cameroun · Douala · conception, pose &amp; suivi.</p><address>${esc(biz.street)}, ${esc(
       `${biz.postalCode} ${biz.city}`.trim(),
     )} · <a href="tel:${esc(biz.phone.replace(/[^\d+]/g, ''))}">${esc(biz.phone)}</a> · <a href="mailto:${esc(biz.email)}">${esc(
       biz.email,

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173 --host",
-    "build": "tsc -b && vite build",
+    "sitemap": "node scripts/generate-sitemap.mjs",
+    "build": "node scripts/generate-sitemap.mjs && tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview --port 5173",
     "clean": "rimraf dist"

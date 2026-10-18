@@ -1,4 +1,38 @@
+# FB Solar Power Ltd — https://fb-solar.com
 User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /api/
+
+# AI / answer-engine crawlers — allow indexing & citation
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://fb-solar.com/sitemap.xml

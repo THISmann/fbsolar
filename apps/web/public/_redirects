@@ -2,5 +2,10 @@
 https://www.fb-solar.com/*  https://fb-solar.com/:splat  301
 http://www.fb-solar.com/*   https://fb-solar.com/:splat  301
 
+# Keep crawler files as static assets (do not SPA-fallback)
+/sitemap.xml  /sitemap.xml  200
+/robots.txt   /robots.txt   200
+/llms.txt     /llms.txt     200
+
 # Cloudflare Pages — SPA fallback (React Router)
 /*    /index.html   200

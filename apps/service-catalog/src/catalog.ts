@@ -145,7 +145,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
           heroEyebrow: 'Solar énergie',
           heroTitle: 'Nous concevons avec le soleil et le métier.',
           heroLead:
-            'Quelles ambitions énergétiques voulez-vous bâtir ? Nous les rendons tangibles — étude, conception et pose d’installations photovoltaïques durables pour toute la région.',
+            'FB Solar à Douala : panneaux solaires, batteries et onduleurs au Cameroun. Étude, conception et pose d’installations photovoltaïques durables — devis WhatsApp.',
           heroImage: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1600&q=80',
           aboutEyebrow: 'À propos',
           aboutTitle: 'Chaque toiture demande une vision.',
@@ -240,6 +240,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
       }
       if (!('whatsappMessage' in data)) {
         data.whatsappMessage = 'Bonjour, je souhaite des informations sur une installation solaire.';
+        changed = true;
+      }
+      const cameroonLead =
+        'FB Solar à Douala : panneaux solaires, batteries et onduleurs au Cameroun. Étude, conception et pose d’installations photovoltaïques durables — devis WhatsApp.';
+      const legacyLead =
+        'Quelles ambitions énergétiques voulez-vous bâtir ? Nous les rendons tangibles — étude, conception et pose d’installations photovoltaïques durables pour toute la région.';
+      if (!data.heroLead || data.heroLead === legacyLead) {
+        data.heroLead = cameroonLead;
         changed = true;
       }
       if (changed) {
