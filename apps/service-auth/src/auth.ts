@@ -64,8 +64,8 @@ export class CreateStaffDto {
   @ApiProperty({ example: 'editor@solar.local' })
   @IsEmail() email!: string;
 
-  @ApiProperty({ minLength: 12, example: 'Editor123!Secure' })
-  @IsString() @MinLength(12) @MaxLength(200) password!: string;
+  @ApiProperty({ minLength: 8, example: 'Editor123!Secure' })
+  @IsString() @MinLength(8) @MaxLength(200) password!: string;
 
   @ApiProperty({ enum: [Role.SUPER_ADMIN, Role.CONTENT_EDITOR, Role.CATALOG_MANAGER] })
   @IsEnum(Role) role!: Role;
@@ -84,8 +84,8 @@ export class UpdateStaffDto {
   @ApiPropertyOptional()
   @IsOptional() @IsBoolean() active?: boolean;
 
-  @ApiPropertyOptional({ minLength: 12 })
-  @IsOptional() @IsString() @MinLength(12) @MaxLength(200) password?: string;
+  @ApiPropertyOptional({ minLength: 8 })
+  @IsOptional() @IsString() @MinLength(8) @MaxLength(200) password?: string;
 }
 
 export class AuditEventDto {
@@ -158,12 +158,14 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async maybeSeedAdmin(): Promise<void> {
-    if (isProduction() || process.env.ALLOW_DEV_SEED !== 'true') return;
+    const allowDev = process.env.ALLOW_DEV_SEED === 'true';
+    const allowProd = process.env.ALLOW_PROD_ADMIN_BOOTSTRAP === 'true';
+    if (isProduction() ? !allowProd : !allowDev) return;
     const email = process.env.BOOTSTRAP_ADMIN_EMAIL?.trim();
     const password = process.env.BOOTSTRAP_ADMIN_PASSWORD?.trim();
-    if (!email || !password || password.length < 12) {
+    if (!email || !password || password.length < 8) {
       throw new Error(
-        'ALLOW_DEV_SEED=true requires BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD (>=12 chars)',
+        'Admin bootstrap requires BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD (>=8 chars)',
       );
     }
     const passwordHash = await bcrypt.hash(password, 12);
@@ -181,7 +183,6 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
       });
       return;
     }
-    if ((await this.prisma.user.count()) > 0) return;
     await this.prisma.user.create({
       data: {
         email: normalized,

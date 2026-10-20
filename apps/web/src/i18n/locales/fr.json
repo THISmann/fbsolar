@@ -265,7 +265,7 @@
       "title": "Utilisateurs admin (IAM)",
       "lead": "Réservé au super administrateur — création de comptes et attribution des rôles par poste.",
       "createTitle": "Créer un administrateur",
-      "passwordMin": "Mot de passe (min. 12)",
+      "passwordMin": "Mot de passe (min. 8)",
       "role": "Rôle / poste",
       "jobTitle": "Intitulé de poste",
       "jobPlaceholder": "ex. Responsable communication",

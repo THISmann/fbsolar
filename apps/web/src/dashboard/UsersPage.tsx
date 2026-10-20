@@ -107,7 +107,7 @@ export function UsersPage() {
               <input
                 type="password"
                 required
-                minLength={12}
+                minLength={8}
                 value={form.password}
                 onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               />

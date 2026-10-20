@@ -265,7 +265,7 @@
       "title": "Admin users (IAM)",
       "lead": "Super administrators only — create accounts and assign roles by job.",
       "createTitle": "Create an administrator",
-      "passwordMin": "Password (min. 12)",
+      "passwordMin": "Password (min. 8)",
       "role": "Role / job",
       "jobTitle": "Job title",
       "jobPlaceholder": "e.g. Communications lead",

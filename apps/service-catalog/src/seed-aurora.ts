@@ -245,4 +245,32 @@ Indice de protection | IP66
 Informations issues du visuel commercial Aurora Power. Fiche technique détaillée et dimensionnement sur demande.
 Caractéristiques susceptibles d’être modifiées sans préavis.`,
   },
+  {
+    slug: 'aurora-smart-hybrid-batteries',
+    name: 'Système hybride Aurora SMART HYBRID + batteries lithium',
+    price: 0,
+    category: 'solar-kits',
+    images: ['/products/aurora-smart-hybrid-batteries.webp'],
+    description: `Kit solaire hybride Aurora Power : onduleurs SMART HYBRID mural et batteries lithium LiFePO4 au sol (module type YF-LFP).
+Installation complète pour l’autoconsommation et le secours au Cameroun — dimensionnement et devis sur demande, sans prix affiché.
+
+## Composition type
+- Onduleurs hybrides Aurora SMART HYBRID (pose murale, écran LCD, MPPT)
+- Batteries lithium Aurora au sol, autoportantes sur roulettes, BMS et écran intégrés
+- Coffrets de protection et câblage AC / DC
+
+## Points forts
+- Production solaire, réseau et stockage lithium sur le même système
+- Fonctionnement hybride : PV, batterie et secours réseau
+- Batteries LiFePO4 extensibles en parallèle
+- Communication BMS (CAN / RS485) avec les onduleurs Aurora
+- Installation résidentielle ou professionnelle
+
+## Usage
+Idéal pour une maison, un commerce ou un site professionnel à Douala et au Cameroun : réduire les coupures, stocker le solaire et alimenter les charges le soir.
+
+## Remarques
+Photo d’une installation réelle Aurora (onduleurs SMART HYBRID + batteries lithium). Fiche technique détaillée, nombre d’onduleurs/batteries et dimensionnement sur demande.
+Caractéristiques susceptibles d’être modifiées sans préavis.`,
+  },
 ];
